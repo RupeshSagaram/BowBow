@@ -20,7 +20,7 @@ export default function HomePage() {
     <div>
 
       {/* ── Hero Section ── */}
-      <section className="bg-gradient-to-br from-teal-50 to-cyan-100 py-20 px-4">
+      <section className="bg-linear-to-br from-teal-50 to-cyan-100 py-20 px-4">
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
             Trusted Pet Care,<br />

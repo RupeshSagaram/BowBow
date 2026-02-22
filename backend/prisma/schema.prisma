@@ -1,0 +1,47 @@
+// This file defines the shape of your database.
+// Each "model" = a table. Each field inside = a column.
+// When you change this file, run "npx prisma migrate dev" to apply the changes.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Role defines the allowed values for the `role` field on User.
+// An enum is like a fixed list of options — the database rejects anything not on it.
+enum Role {
+  OWNER
+  SITTER
+  BOTH
+}
+
+// User maps to a "users" table in PostgreSQL.
+// Each person who signs up gets one row in this table.
+model User {
+  // id: auto-generated unique identifier (cuid = collision-resistant unique id)
+  id        String   @id @default(cuid())
+
+  // clerkId: the ID Clerk assigns to this user in THEIR system.
+  // @unique means no two rows can have the same clerkId.
+  clerkId   String   @unique
+
+  // email must also be unique across all users
+  email     String   @unique
+
+  firstName String
+  lastName  String
+
+  // The ? means this field is optional — can be null
+  avatarUrl String?
+
+  // role defaults to OWNER when a new user is created
+  role      Role     @default(OWNER)
+
+  // Prisma manages these automatically
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const { clerkMiddleware } = require('./middleware/auth');
 
 const app = express();
 
@@ -10,15 +11,26 @@ app.use(cors({ origin: 'http://localhost:5173' }));
 // Parse incoming JSON request bodies
 app.use(express.json());
 
+// clerkMiddleware() reads CLERK_SECRET_KEY from .env automatically.
+// It must come AFTER cors and express.json(), but BEFORE all routes.
+// It runs on every request, verifies any JWT in the Authorization header,
+// and populates req.auth. Routes without requireAuth() still work — they
+// just won't have req.auth if the user isn't logged in.
+app.use(clerkMiddleware());
+
 // --- Routes ---
-// Health check — visit http://localhost:3001/api/health to confirm the server is running
+// Health check — visit http://localhost:3001/api/health
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'BowBow backend is running!' });
 });
 
-// Future routes will be added here as we build each feature, e.g.:
-// app.use('/api/users', require('./routes/users'));
+// User routes (sync Clerk user to DB, get current user)
+app.use('/api/users', require('./routes/users'));
+
+// Future routes added here as features are built:
 // app.use('/api/pets', require('./routes/pets'));
+// app.use('/api/sitters', require('./routes/sitters'));
+// app.use('/api/bookings', require('./routes/bookings'));
 
 // --- 404 handler (must be after all routes) ---
 app.use((req, res) => {
