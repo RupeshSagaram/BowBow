@@ -27,8 +27,10 @@ app.get('/api/health', (req, res) => {
 // User routes (sync Clerk user to DB, get current user)
 app.use('/api/users', require('./routes/users'));
 
+// Pet routes (CRUD for pet profiles)
+app.use('/api/pets', require('./routes/pets'));
+
 // Future routes added here as features are built:
-// app.use('/api/pets', require('./routes/pets'));
 // app.use('/api/sitters', require('./routes/sitters'));
 // app.use('/api/bookings', require('./routes/bookings'));
 

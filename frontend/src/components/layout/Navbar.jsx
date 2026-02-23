@@ -51,6 +51,30 @@ export default function Navbar() {
               Dashboard
             </NavLink>
           )}
+          {isSignedIn && (
+            <NavLink
+              to="/pets"
+              className={({ isActive }) =>
+                isActive
+                  ? 'text-teal-600 font-semibold'
+                  : 'text-gray-600 hover:text-teal-600 transition-colors'
+              }
+            >
+              My Pets
+            </NavLink>
+          )}
+          {isSignedIn && (
+            <NavLink
+              to="/profile"
+              className={({ isActive }) =>
+                isActive
+                  ? 'text-teal-600 font-semibold'
+                  : 'text-gray-600 hover:text-teal-600 transition-colors'
+              }
+            >
+              Profile
+            </NavLink>
+          )}
         </div>
 
         {/* Auth area — changes based on sign-in state */}

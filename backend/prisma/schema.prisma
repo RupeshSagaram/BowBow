@@ -1,6 +1,6 @@
 // This file defines the shape of your database.
 // Each "model" = a table. Each field inside = a column.
-// When you change this file, run "npx prisma migrate dev" to apply the changes.
+// When you change this file, run "npx prisma db push" to apply the changes.
 
 generator client {
   provider = "prisma-client-js"
@@ -40,6 +40,48 @@ model User {
 
   // role defaults to OWNER when a new user is created
   role      Role     @default(OWNER)
+
+  // bio is a short description the user writes about themselves
+  bio       String?
+
+  // hasCompletedOnboarding tracks if the user has explicitly chosen their role.
+  // role defaults to OWNER so we can't use role alone to know this.
+  // Once the user picks a role on /onboarding, this is set to true.
+  hasCompletedOnboarding Boolean @default(false)
+
+  // pets: a user can own many pets (one-to-many relation)
+  pets      Pet[]
+
+  // Prisma manages these automatically
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Pet maps to a "pets" table in PostgreSQL.
+// Each pet belongs to exactly one user (the owner).
+model Pet {
+  // id: auto-generated unique identifier
+  id       String  @id @default(cuid())
+
+  // name is required — every pet must have one
+  name     String
+
+  // species is required — chosen from a predefined list on the frontend
+  // Stored as a plain String (not an enum) so adding new species doesn't require a DB migration
+  species  String
+
+  // All remaining fields are optional (? = can be null)
+  breed    String?
+  age      Float?   // in years — Float allows e.g. 2.5 (two and a half years old)
+  weight   Float?   // in pounds
+  notes    String?  // free-text care instructions for sitters
+  imageUrl String?  // placeholder for future Cloudinary photo upload
+
+  // Relation — every pet belongs to exactly one user.
+  // userId stores our internal User.id (the cuid), NOT the Clerk ID.
+  // This is the standard foreign key pattern in relational databases.
+  userId   String
+  owner    User     @relation(fields: [userId], references: [id])
 
   // Prisma manages these automatically
   createdAt DateTime @default(now())

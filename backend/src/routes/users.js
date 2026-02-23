@@ -19,4 +19,7 @@ router.post('/sync', requireAuth(), usersController.sync);
 // GET /api/users/me — returns the logged-in user's database record
 router.get('/me', requireAuth(), usersController.getMe);
 
+// PATCH /api/users/me — updates user-controlled fields (role, bio, hasCompletedOnboarding)
+router.patch('/me', requireAuth(), usersController.updateMe);
+
 module.exports = router;

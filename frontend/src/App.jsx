@@ -1,15 +1,10 @@
 // App.jsx — The route map of the entire website.
 //
-// Two important changes from Feature 1:
-//
-// 1. /sign-in/* and /sign-up/* use the /* wildcard.
-//    Clerk renders sub-routes internally (e.g. /sign-in/factor-one for the
-//    verification step). React Router needs the wildcard to allow those through.
-//    Without it, Clerk's multi-step flows break and you see a blank page.
-//
-// 2. /dashboard is wrapped in <ProtectedRoute>.
-//    ProtectedRoute checks if the user is signed in. If not, it redirects to /sign-in.
-//    Every future page that requires login gets this same wrapper.
+// Protected routes (require sign-in):
+//   /dashboard   — user's home after login; redirects to /onboarding for new users
+//   /onboarding  — first-time role selection; only reached from dashboard redirect
+//   /profile     — view and edit role + bio
+//   /pets        — manage pet profiles (add, edit, delete)
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
@@ -19,6 +14,9 @@ import SearchPage from './pages/SearchPage';
 import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import DashboardPage from './pages/DashboardPage';
+import OnboardingPage from './pages/OnboardingPage';
+import ProfilePage from './pages/ProfilePage';
+import PetsPage from './pages/PetsPage';
 
 function App() {
   return (
@@ -39,6 +37,30 @@ function App() {
             element={
               <ProtectedRoute>
                 <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/onboarding"
+            element={
+              <ProtectedRoute>
+                <OnboardingPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pets"
+            element={
+              <ProtectedRoute>
+                <PetsPage />
               </ProtectedRoute>
             }
           />

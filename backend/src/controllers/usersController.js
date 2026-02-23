@@ -9,6 +9,11 @@
 // getMe():
 //   Returns the logged-in user's record from OUR database.
 //   Future features (pets, bookings) will add relations to this user record.
+//
+// updateMe():
+//   Called by the Onboarding and Profile pages to save user-controlled data.
+//   Only updates fields we manage (role, bio, hasCompletedOnboarding).
+//   firstName/lastName/avatarUrl are Clerk-managed and NOT updatable here.
 
 const prisma = require('../utils/prismaClient');
 
@@ -72,4 +77,32 @@ async function getMe(req, res) {
   }
 }
 
-module.exports = { sync, getMe };
+// PATCH /api/users/me
+async function updateMe(req, res) {
+  const { userId } = req.auth;
+
+  // Only allow updating fields the user controls in our DB.
+  // We build the update object from only the fields that were actually sent
+  // so this endpoint supports partial updates — callers don't have to send everything.
+  const { role, bio, hasCompletedOnboarding } = req.body;
+
+  const updateData = {};
+  if (role !== undefined) updateData.role = role;
+  if (bio !== undefined) updateData.bio = bio;
+  if (hasCompletedOnboarding !== undefined) {
+    updateData.hasCompletedOnboarding = hasCompletedOnboarding;
+  }
+
+  try {
+    const user = await prisma.user.update({
+      where: { clerkId: userId },
+      data: updateData,
+    });
+    res.json({ user });
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).json({ error: 'Failed to update user' });
+  }
+}
+
+module.exports = { sync, getMe, updateMe };

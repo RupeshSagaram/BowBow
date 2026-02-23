@@ -16,18 +16,32 @@
 //
 // useRef(hasSynced) — tracks whether we've already synced in this session.
 //   Without this, the sync would fire on every re-render of DashboardPage.
+//
+// Returns { dbUser, syncing }:
+//   dbUser  → the user record from our database (null until sync completes)
+//   syncing → true while the sync is in-flight; false once it's done (or skipped)
+//   DashboardPage waits for syncing=false before deciding whether to redirect.
 
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth, useUser } from '@clerk/clerk-react';
 
 export function useUserSync() {
   const { isSignedIn, getToken } = useAuth();
   const { user, isLoaded } = useUser();
   const hasSynced = useRef(false);
+  const [dbUser, setDbUser] = useState(null);
+  // syncing starts true — we don't know yet if we need to sync
+  const [syncing, setSyncing] = useState(true);
 
   useEffect(() => {
-    // Only run when Clerk is ready, user is signed in, and we haven't synced yet
-    if (!isLoaded || !isSignedIn || !user || hasSynced.current) return;
+    // Can't do anything until Clerk has finished loading
+    if (!isLoaded || !isSignedIn || !user) return;
+
+    // Already synced this session — mark syncing done and skip
+    if (hasSynced.current) {
+      setSyncing(false);
+      return;
+    }
 
     async function syncUser() {
       try {
@@ -54,14 +68,20 @@ export function useUserSync() {
 
         const data = await response.json();
         console.log('✓ User synced to database:', data.user);
+        setDbUser(data.user);
         hasSynced.current = true;
       } catch (error) {
         // Not throwing — a sync failure shouldn't break the whole app.
         // The user can still navigate the site; we'll retry on next sign-in.
         console.error('User sync failed:', error);
+      } finally {
+        // Always mark syncing as done, even if sync failed
+        setSyncing(false);
       }
     }
 
     syncUser();
   }, [isLoaded, isSignedIn, user, getToken]);
+
+  return { dbUser, syncing };
 }
