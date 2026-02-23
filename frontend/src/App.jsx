@@ -5,6 +5,10 @@
 //   /onboarding  — first-time role selection; only reached from dashboard redirect
 //   /profile     — view and edit role + bio
 //   /pets        — manage pet profiles (add, edit, delete)
+//   /my-listing  — sitter-only: create or edit the sitter's public listing
+//
+// Public routes (no sign-in needed):
+//   /sitters/:id — public sitter profile page, viewable by anyone
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
@@ -17,6 +21,8 @@ import DashboardPage from './pages/DashboardPage';
 import OnboardingPage from './pages/OnboardingPage';
 import ProfilePage from './pages/ProfilePage';
 import PetsPage from './pages/PetsPage';
+import SitterSetupPage from './pages/SitterSetupPage';
+import SitterPage from './pages/SitterPage';
 
 function App() {
   return (
@@ -26,6 +32,7 @@ function App() {
           {/* Public routes — anyone can visit */}
           <Route path="/" element={<HomePage />} />
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/sitters/:id" element={<SitterPage />} />
 
           {/* Clerk auth pages — /* wildcard required for Clerk's internal sub-routes */}
           <Route path="/sign-in/*" element={<SignInPage />} />
@@ -61,6 +68,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <PetsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-listing"
+            element={
+              <ProtectedRoute>
+                <SitterSetupPage />
               </ProtectedRoute>
             }
           />

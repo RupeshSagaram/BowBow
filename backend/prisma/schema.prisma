@@ -52,6 +52,9 @@ model User {
   // pets: a user can own many pets (one-to-many relation)
   pets      Pet[]
 
+  // sitterProfile: if the user is a sitter, they have one listing (one-to-one relation)
+  sitterProfile SitterProfile?
+
   // Prisma manages these automatically
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -86,4 +89,37 @@ model Pet {
   // Prisma manages these automatically
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// SitterProfile maps to a "sitter_profiles" table.
+// Only users with role SITTER or BOTH will have one of these.
+// One-to-one with User (@unique on userId).
+model SitterProfile {
+  id              String   @id @default(cuid())
+
+  // One-to-one relation with User
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+
+  // rate: per-night rate in USD (required when creating a listing)
+  rate            Float
+
+  // services: array of service names the sitter offers
+  // Stored as a PostgreSQL TEXT[] array — no join table needed for a simple list
+  services        String[]
+
+  // Location fields — all optional
+  city            String?
+  state           String?  // 2-letter abbreviation, e.g. "CA"
+  zipCode         String?
+
+  // isAvailable: false = sitter is taking a break and won't appear in search
+  isAvailable     Boolean  @default(true)
+
+  // Optional context for owners
+  yearsExperience Int?
+
+  // Prisma manages these automatically
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
