@@ -6,6 +6,7 @@
 //   /profile     — view and edit role + bio
 //   /pets        — manage pet profiles (add, edit, delete)
 //   /my-listing  — sitter-only: create or edit the sitter's public listing
+//   /bookings    — view and manage booking requests (as owner and/or sitter)
 //
 // Public routes (no sign-in needed):
 //   /sitters/:id — public sitter profile page, viewable by anyone
@@ -23,6 +24,7 @@ import ProfilePage from './pages/ProfilePage';
 import PetsPage from './pages/PetsPage';
 import SitterSetupPage from './pages/SitterSetupPage';
 import SitterPage from './pages/SitterPage';
+import BookingsPage from './pages/BookingsPage';
 
 function App() {
   return (
@@ -76,6 +78,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <SitterSetupPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/bookings"
+            element={
+              <ProtectedRoute>
+                <BookingsPage />
               </ProtectedRoute>
             }
           />

@@ -23,6 +23,7 @@ import { useUser } from '@clerk/clerk-react';
 import { useUserSync } from '../hooks/useUserSync';
 import { usePets } from '../hooks/usePets';
 import { useSitterProfile } from '../hooks/useSitterProfile';
+import { useBookings } from '../hooks/useBookings';
 import { Navigate, Link } from 'react-router-dom';
 
 const ROLE_LABELS = {
@@ -43,8 +44,13 @@ export default function DashboardPage() {
   const { dbUser, syncing } = useUserSync();
   const { pets, loading: petsLoading } = usePets();
   const { sitterProfile, loading: sitterLoading } = useSitterProfile();
+  const { ownerBookings, loading: bookingsLoading } = useBookings();
 
   const isSitter = dbUser?.role === 'SITTER' || dbUser?.role === 'BOTH';
+
+  const activeBookingsCount = ownerBookings.filter(
+    (b) => b.status === 'PENDING' || b.status === 'CONFIRMED'
+  ).length;
 
   // Wait for the sync to finish before making any routing decisions.
   // Without this, dbUser is null and we'd incorrectly redirect to /onboarding.
@@ -133,6 +139,27 @@ export default function DashboardPage() {
             className="text-sm text-teal-600 hover:text-teal-700 font-medium underline underline-offset-2"
           >
             {pets.length === 0 ? 'Add your first pet' : 'Manage my pets'}
+          </Link>
+        </div>
+
+        {/* My Bookings summary card */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm text-gray-500">My Bookings</p>
+            <span className="text-2xl">📅</span>
+          </div>
+          {bookingsLoading ? (
+            <div className="w-5 h-5 border-2 border-teal-600 border-t-transparent rounded-full animate-spin mb-3" />
+          ) : (
+            <p className="text-2xl font-bold text-gray-800 mb-3">
+              {activeBookingsCount} active
+            </p>
+          )}
+          <Link
+            to="/bookings"
+            className="text-sm text-teal-600 hover:text-teal-700 font-medium underline underline-offset-2"
+          >
+            View all bookings
           </Link>
         </div>
 

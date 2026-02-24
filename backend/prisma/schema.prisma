@@ -19,6 +19,14 @@ enum Role {
   BOTH
 }
 
+// BookingStatus tracks where a booking is in its lifecycle.
+enum BookingStatus {
+  PENDING      // owner submitted; waiting for sitter to respond
+  CONFIRMED    // sitter accepted
+  CANCELLED    // either party cancelled
+  COMPLETED    // stay is finished
+}
+
 // User maps to a "users" table in PostgreSQL.
 // Each person who signs up gets one row in this table.
 model User {
@@ -55,6 +63,9 @@ model User {
   // sitterProfile: if the user is a sitter, they have one listing (one-to-one relation)
   sitterProfile SitterProfile?
 
+  // bookings made by this user as a pet owner
+  ownerBookings Booking[] @relation("OwnerBookings")
+
   // Prisma manages these automatically
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -85,6 +96,9 @@ model Pet {
   // This is the standard foreign key pattern in relational databases.
   userId   String
   owner    User     @relation(fields: [userId], references: [id])
+
+  // bookings that include this pet
+  bookings Booking[]
 
   // Prisma manages these automatically
   createdAt DateTime @default(now())
@@ -118,6 +132,40 @@ model SitterProfile {
 
   // Optional context for owners
   yearsExperience Int?
+
+  // bookings received by this sitter
+  bookings        Booking[]
+
+  // Prisma manages these automatically
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// Booking maps to a "bookings" table.
+// Created when a pet owner requests a stay with a sitter.
+model Booking {
+  id              String        @id @default(cuid())
+
+  // Owner side — the pet owner who made this request
+  ownerId         String
+  owner           User          @relation("OwnerBookings", fields: [ownerId], references: [id])
+
+  // Sitter side — linked to the SitterProfile (not the User directly)
+  sitterProfileId String
+  sitterProfile   SitterProfile @relation(fields: [sitterProfileId], references: [id])
+
+  // Which pet is being cared for
+  petId           String
+  pet             Pet           @relation(fields: [petId], references: [id])
+
+  // Stay details
+  service         String        // one of the 5 service types
+  startDate       DateTime
+  endDate         DateTime
+  totalPrice      Float         // rate × nights, computed at booking creation time
+  message         String?       // optional note from owner to sitter
+
+  status          BookingStatus @default(PENDING)
 
   // Prisma manages these automatically
   createdAt       DateTime @default(now())

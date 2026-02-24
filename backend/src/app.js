@@ -33,8 +33,8 @@ app.use('/api/pets', require('./routes/pets'));
 // Sitter routes (sitter listings — create, view, browse)
 app.use('/api/sitters', require('./routes/sitters'));
 
-// Future routes added here as features are built:
-// app.use('/api/bookings', require('./routes/bookings'));
+// Booking routes (create and manage bookings between owners and sitters)
+app.use('/api/bookings', require('./routes/bookings'));
 
 // --- 404 handler (must be after all routes) ---
 app.use((req, res) => {
