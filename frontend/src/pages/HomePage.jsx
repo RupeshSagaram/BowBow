@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 // Service types shown on the homepage
 const services = [
@@ -16,6 +17,18 @@ const stats = [
 ];
 
 export default function HomePage() {
+  const navigate = useNavigate();
+  const [city, setCity] = useState('');
+
+  // Navigate to SearchPage, passing the city as a ?city= query param.
+  // SearchPage reads this param to pre-populate the city filter.
+  function handleSearch() {
+    const dest = city.trim()
+      ? `/search?city=${encodeURIComponent(city.trim())}`
+      : '/search';
+    navigate(dest);
+  }
+
   return (
     <div>
 
@@ -30,19 +43,22 @@ export default function HomePage() {
             Find loving pet sitters and dog walkers. Book with confidence — every sitter is reviewed by your neighbors.
           </p>
 
-          {/* Search bar placeholder — will be wired to real search in Feature 6 */}
+          {/* Search bar — wired to SearchPage with ?city= query param */}
           <div className="bg-white rounded-2xl shadow-lg p-2 flex flex-col sm:flex-row gap-2 max-w-xl mx-auto">
             <input
               type="text"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               placeholder="Enter your city or zip code..."
               className="flex-1 px-4 py-3 rounded-xl text-gray-700 outline-none focus:ring-2 focus:ring-teal-400"
             />
-            <Link
-              to="/search"
+            <button
+              onClick={handleSearch}
               className="bg-teal-600 hover:bg-teal-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-center"
             >
               Find Sitters
-            </Link>
+            </button>
           </div>
         </div>
       </section>
