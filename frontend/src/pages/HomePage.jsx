@@ -65,7 +65,7 @@ export default function HomePage() {
 
       {/* ── Stats Strip ── */}
       <section className="bg-teal-600 py-8 px-4">
-        <div className="max-w-4xl mx-auto grid grid-cols-3 gap-4 text-center text-white">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4 text-center text-white">
           {stats.map((stat) => (
             <div key={stat.label}>
               <p className="text-3xl font-extrabold">{stat.value}</p>

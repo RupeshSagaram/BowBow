@@ -194,9 +194,19 @@ function BookingCard({ booking, actions, reviewSection }) {
 export default function BookingsPage() {
   const { ownerBookings, sitterBookings, loading, error, updateBookingStatus, createReview } = useBookings();
   const { dbUser, loading: userLoading } = useDbUser();
+  const [actionError, setActionError] = useState(null);
 
   const isOwner  = dbUser?.role === 'OWNER'  || dbUser?.role === 'BOTH';
   const isSitter = dbUser?.role === 'SITTER' || dbUser?.role === 'BOTH';
+
+  async function handleAction(bookingId, status) {
+    setActionError(null);
+    try {
+      await updateBookingStatus(bookingId, status);
+    } catch (err) {
+      setActionError(err.message);
+    }
+  }
 
   if (loading || userLoading) {
     return (
@@ -271,7 +281,7 @@ export default function BookingsPage() {
                       ? [
                           {
                             label:     'Cancel Request',
-                            onClick:   () => updateBookingStatus(booking.id, 'CANCELLED'),
+                            onClick:   () => handleAction(booking.id, 'CANCELLED'),
                             className: 'text-sm font-medium text-gray-600 border border-gray-300 hover:border-gray-400 hover:text-gray-800 px-4 py-2 rounded-xl transition-colors',
                           },
                         ]
@@ -282,6 +292,13 @@ export default function BookingsPage() {
             })}
           </div>
         </section>
+      )}
+
+      {/* Action error banner */}
+      {actionError && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+          <p className="text-sm text-red-600">{actionError}</p>
+        </div>
       )}
 
       {/* ── Sitter section ── */}
@@ -303,19 +320,19 @@ export default function BookingsPage() {
                 buttons.push(
                   {
                     label:     'Confirm',
-                    onClick:   () => updateBookingStatus(booking.id, 'CONFIRMED'),
+                    onClick:   () => handleAction(booking.id, 'CONFIRMED'),
                     className: 'text-sm font-semibold bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl transition-colors',
                   },
                   {
                     label:     'Decline',
-                    onClick:   () => updateBookingStatus(booking.id, 'CANCELLED'),
+                    onClick:   () => handleAction(booking.id, 'CANCELLED'),
                     className: 'text-sm font-medium text-gray-600 border border-gray-300 hover:border-gray-400 hover:text-gray-800 px-4 py-2 rounded-xl transition-colors',
                   }
                 );
               } else if (isConfirmed) {
                 buttons.push({
                   label:     'Mark as Complete',
-                  onClick:   () => updateBookingStatus(booking.id, 'COMPLETED'),
+                  onClick:   () => handleAction(booking.id, 'COMPLETED'),
                   className: 'text-sm font-medium text-blue-600 border border-blue-300 hover:border-blue-400 hover:text-blue-800 px-4 py-2 rounded-xl transition-colors',
                 });
               }

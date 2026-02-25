@@ -1,8 +1,8 @@
 // MessagesPage.jsx — Protected page at /messages.
 //
-// Two-panel layout:
-//   Left:  conversation list — all bookings (as owner + as sitter), sorted newest-first.
-//   Right: message thread for the selected booking.
+// Two-panel layout (desktop): conversation list on left, thread on right.
+// Mobile: one panel at a time — list view or thread view, toggled by
+//   selecting a conversation (showThread=true) or tapping "← Back" (showThread=false).
 //
 // Polling: useMessages polls GET /api/messages/:bookingId every 5 seconds.
 // New messages automatically scroll the thread to the bottom.
@@ -119,8 +119,8 @@ function MessageBubble({ message, isMine }) {
   );
 }
 
-// Right-side thread panel
-function ThreadPanel({ convo, messages, loading, dbUser, input, setInput, sending, sendError, onSend, bottomRef }) {
+// Right-side thread panel — also handles mobile "back" navigation
+function ThreadPanel({ convo, messages, loading, error, dbUser, input, setInput, sending, sendError, onSend, bottomRef, onBack }) {
   const other = convo.otherParty;
 
   return (
@@ -128,6 +128,16 @@ function ThreadPanel({ convo, messages, loading, dbUser, input, setInput, sendin
 
       {/* Thread header */}
       <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-200 bg-white shrink-0">
+        {/* Back button — mobile only */}
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="md:hidden text-sm text-teal-600 hover:text-teal-700 font-medium mr-1 shrink-0"
+            aria-label="Back to conversations"
+          >
+            ← Back
+          </button>
+        )}
         <Avatar user={other} size="md" />
         <div className="min-w-0">
           <p className="font-semibold text-gray-800 truncate">
@@ -150,6 +160,12 @@ function ThreadPanel({ convo, messages, loading, dbUser, input, setInput, sendin
         {loading && messages.length === 0 ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="w-6 h-6 border-2 border-teal-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : error && messages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center mt-16 text-gray-400">
+            <p className="text-4xl mb-3">⚠️</p>
+            <p className="text-sm font-medium text-red-500">Failed to load messages</p>
+            <p className="text-xs mt-1">Please try again or refresh the page.</p>
           </div>
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center mt-16 text-gray-400">
@@ -204,8 +220,10 @@ export default function MessagesPage() {
   const [input,      setInput]      = useState('');
   const [sending,    setSending]    = useState(false);
   const [sendError,  setSendError]  = useState(null);
+  // Mobile: toggle between conversation list and thread view
+  const [showThread, setShowThread] = useState(false);
 
-  const { messages, loading: messagesLoading, sendMessage } = useMessages(selectedId);
+  const { messages, loading: messagesLoading, error: messagesError, sendMessage } = useMessages(selectedId);
   const bottomRef = useRef(null);
 
   // Combine and sort all bookings into a single conversation list
@@ -227,7 +245,7 @@ export default function MessagesPage() {
     return all;
   }, [ownerBookings, sitterBookings]);
 
-  // Auto-select first conversation once bookings load
+  // Auto-select first conversation once bookings load (desktop only — don't auto-show thread on mobile)
   useEffect(() => {
     if (!selectedId && conversations.length > 0) {
       setSelectedId(conversations[0].id);
@@ -291,8 +309,8 @@ export default function MessagesPage() {
       {/* Two-panel container */}
       <div className="flex flex-1 border border-gray-200 rounded-2xl overflow-hidden shadow-sm bg-white min-h-0">
 
-        {/* ── Left: conversation list ── */}
-        <div className="w-72 border-r border-gray-200 flex flex-col shrink-0 overflow-hidden">
+        {/* ── Left: conversation list ── hidden on mobile when thread is shown */}
+        <div className={`${showThread ? 'hidden' : 'flex'} md:flex w-full md:w-72 border-r border-gray-200 flex-col shrink-0 overflow-hidden`}>
           <div className="px-4 py-2.5 border-b border-gray-100 bg-gray-50 shrink-0">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
               Conversations
@@ -308,28 +326,33 @@ export default function MessagesPage() {
                   setSelectedId(convo.id);
                   setInput('');
                   setSendError(null);
+                  setShowThread(true);
                 }}
               />
             ))}
           </div>
         </div>
 
-        {/* ── Right: thread ── */}
+        {/* ── Right: thread ── hidden on mobile when list is shown */}
         {selectedConvo ? (
-          <ThreadPanel
-            convo={selectedConvo}
-            messages={messages}
-            loading={messagesLoading}
-            dbUser={dbUser}
-            input={input}
-            setInput={setInput}
-            sending={sending}
-            sendError={sendError}
-            onSend={handleSend}
-            bottomRef={bottomRef}
-          />
+          <div className={`${showThread ? 'flex' : 'hidden'} md:flex flex-1 min-w-0`}>
+            <ThreadPanel
+              convo={selectedConvo}
+              messages={messages}
+              loading={messagesLoading}
+              error={messagesError}
+              dbUser={dbUser}
+              input={input}
+              setInput={setInput}
+              sending={sending}
+              sendError={sendError}
+              onSend={handleSend}
+              bottomRef={bottomRef}
+              onBack={() => setShowThread(false)}
+            />
+          </div>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-400">
+          <div className="hidden md:flex flex-1 items-center justify-center text-gray-400">
             <p className="text-sm">Select a conversation</p>
           </div>
         )}
