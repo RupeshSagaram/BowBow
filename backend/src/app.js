@@ -5,8 +5,14 @@ const { clerkMiddleware } = require('./middleware/auth');
 const app = express();
 
 // --- Middleware ---
-// Allow requests from the frontend (running on localhost:5173)
-app.use(cors({ origin: 'http://localhost:5173' }));
+// Allow requests from the frontend.
+// FRONTEND_URL is set in production (Vercel URL); localhost:5173 covers local dev.
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+].filter(Boolean);
+
+app.use(cors({ origin: allowedOrigins }));
 
 // Parse incoming JSON request bodies
 app.use(express.json());
