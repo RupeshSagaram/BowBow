@@ -25,6 +25,7 @@ import PetsPage from './pages/PetsPage';
 import SitterSetupPage from './pages/SitterSetupPage';
 import SitterPage from './pages/SitterPage';
 import BookingsPage from './pages/BookingsPage';
+import MessagesPage from './pages/MessagesPage';
 
 function App() {
   return (
@@ -86,6 +87,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <BookingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/messages"
+            element={
+              <ProtectedRoute>
+                <MessagesPage />
               </ProtectedRoute>
             }
           />

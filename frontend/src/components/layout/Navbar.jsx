@@ -65,6 +65,18 @@ export default function Navbar() {
           )}
           {isSignedIn && (
             <NavLink
+              to="/messages"
+              className={({ isActive }) =>
+                isActive
+                  ? 'text-teal-600 font-semibold'
+                  : 'text-gray-600 hover:text-teal-600 transition-colors'
+              }
+            >
+              Messages
+            </NavLink>
+          )}
+          {isSignedIn && (
+            <NavLink
               to="/pets"
               className={({ isActive }) =>
                 isActive

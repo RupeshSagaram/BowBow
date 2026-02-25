@@ -66,6 +66,9 @@ model User {
   // bookings made by this user as a pet owner
   ownerBookings  Booking[]  @relation("OwnerBookings")
 
+  // messages sent by this user
+  messagesSent   Message[]  @relation("MessagesSent")
+
   // reviews written by this user (as a pet owner reviewing a sitter)
   reviewsWritten Review[]   @relation("ReviewsWritten")
 
@@ -176,9 +179,32 @@ model Booking {
   // review left by the owner after the stay (one-to-one, optional)
   review          Review?
 
+  // messages exchanged between owner and sitter for this booking
+  messages        Message[]
+
   // Prisma manages these automatically
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+// Message maps to a "messages" table.
+// One message thread per booking — both owner and sitter can send messages.
+// Polled by the frontend every 5 seconds for new messages (no WebSockets needed for MVP).
+model Message {
+  id        String   @id @default(cuid())
+
+  // Which booking this message belongs to
+  bookingId String
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+
+  // Who sent this message
+  senderId  String
+  sender    User     @relation("MessagesSent", fields: [senderId], references: [id])
+
+  // The message content
+  text      String
+
+  createdAt DateTime @default(now())
 }
 
 // Review maps to a "reviews" table.

@@ -39,6 +39,9 @@ app.use('/api/bookings', require('./routes/bookings'));
 // Review routes (post-stay ratings and reviews)
 app.use('/api/reviews', require('./routes/reviews'));
 
+// Message routes (per-booking message threads between owner and sitter)
+app.use('/api/messages', require('./routes/messages'));
+
 // --- 404 handler (must be after all routes) ---
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
