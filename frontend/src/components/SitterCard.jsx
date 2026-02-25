@@ -44,11 +44,16 @@ export default function SitterCard({ sitter }) {
           <p className="font-semibold text-gray-800 leading-tight">
             {user.firstName} {user.lastName}
           </p>
-          {/* Rate + location on the same row */}
+          {/* Rate + rating + location */}
           <div className="flex flex-wrap items-center gap-2 mt-0.5">
             <span className="text-xs font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full">
               ${sitter.rate}/night
             </span>
+            {sitter.avgRating != null && (
+              <span className="text-xs font-medium text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full">
+                ★ {sitter.avgRating} ({sitter.reviewCount})
+              </span>
+            )}
             {location && (
               <span className="text-xs text-gray-500">📍 {location}</span>
             )}

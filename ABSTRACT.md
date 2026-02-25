@@ -1,0 +1,7 @@
+# BowBow — Project Abstract
+
+**BowBow** is a full-stack peer-to-peer pet care marketplace web application that connects pet owners with local pet sitters for services such as boarding, dog walking, daycare, drop-in visits, and house sitting. Built as a modern single-page application, BowBow allows users to register with a dual-role identity — as a pet owner, a pet sitter, or both — and provides a seamless end-to-end experience from discovery to booking.
+
+Pet owners can create detailed profiles for their animals, browse and filter a directory of available local sitters by location, service type, and rate, and submit booking requests with live price previews. Pet sitters can publish public listings with their offered services, rates, and availability, and manage incoming booking requests through a structured status workflow (Pending → Confirmed/Cancelled → Completed). A centralized dashboard surfaces key information for each role, and a dedicated bookings page enables both owners and sitters to track and act on their reservations.
+
+The frontend is built with **React 19** and **Vite**, styled using **Tailwind CSS**, and uses **React Router** for client-side navigation. Authentication and user management are handled by **Clerk**, with user records synchronized to a **PostgreSQL** database. The backend is a **Node.js/Express** REST API using **Prisma ORM** for type-safe database access. The data model centers on four core entities — User, Pet, SitterProfile, and Booking — with role-based access control enforced across all protected API routes.

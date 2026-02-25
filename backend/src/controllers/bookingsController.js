@@ -128,12 +128,13 @@ async function getMyBookings(req, res) {
     });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Bookings where this user is the pet owner
+    // Bookings where this user is the pet owner (include review if one exists)
     const ownerBookings = await prisma.booking.findMany({
       where:   { ownerId: user.id },
       include: {
-        pet: true,
+        pet:          true,
         sitterProfile: { include: { user: SITTER_USER_FIELDS } },
+        review:        true,
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -189,12 +190,18 @@ async function updateBookingStatus(req, res) {
     const current = booking.status;
 
     if (isSitter && !isOwner) {
-      // Sitter can: confirm or cancel a PENDING booking
-      if (current !== 'PENDING') {
-        return res.status(400).json({ error: `Sitter can only act on PENDING bookings (current: ${current})` });
-      }
-      if (status !== 'CONFIRMED' && status !== 'CANCELLED') {
-        return res.status(400).json({ error: 'Sitter can only set status to CONFIRMED or CANCELLED' });
+      // Sitter can: confirm or cancel a PENDING booking, or mark a CONFIRMED booking as COMPLETED
+      if (status === 'COMPLETED') {
+        if (current !== 'CONFIRMED') {
+          return res.status(400).json({ error: 'Can only mark a CONFIRMED booking as complete' });
+        }
+      } else {
+        if (current !== 'PENDING') {
+          return res.status(400).json({ error: `Sitter can only act on PENDING bookings (current: ${current})` });
+        }
+        if (status !== 'CONFIRMED' && status !== 'CANCELLED') {
+          return res.status(400).json({ error: 'Sitter can only set status to CONFIRMED or CANCELLED' });
+        }
       }
     } else if (isOwner && !isSitter) {
       // Owner can cancel a PENDING or CONFIRMED booking

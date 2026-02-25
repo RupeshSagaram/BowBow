@@ -227,10 +227,10 @@ export default function SitterPage() {
             <img
               src={user.avatarUrl}
               alt={`${user.firstName}'s avatar`}
-              className="w-20 h-20 rounded-full object-cover flex-shrink-0"
+              className="w-20 h-20 rounded-full object-cover shrink-0"
             />
           ) : (
-            <div className="w-20 h-20 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-3xl flex-shrink-0">
+            <div className="w-20 h-20 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-3xl shrink-0">
               {user.firstName?.[0]}
             </div>
           )}
@@ -240,7 +240,7 @@ export default function SitterPage() {
               {user.firstName} {user.lastName}
             </h1>
 
-            {/* Availability + rate badges */}
+            {/* Availability + rate + rating badges */}
             <div className="flex flex-wrap items-center gap-2 mt-2">
               <span
                 className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
@@ -254,6 +254,11 @@ export default function SitterPage() {
               <span className="text-sm font-semibold text-teal-700 bg-teal-50 px-3 py-1 rounded-full">
                 ${sitterProfile.rate}/night
               </span>
+              {sitterProfile.avgRating != null && (
+                <span className="text-sm font-semibold text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full">
+                  ★ {sitterProfile.avgRating} ({sitterProfile.reviews?.length ?? 0})
+                </span>
+              )}
             </div>
 
             {/* Location */}
@@ -292,6 +297,51 @@ export default function SitterPage() {
                 <span>{SERVICE_ICONS[service] ?? '🐾'}</span>
                 {service}
               </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Reviews section (public) ── */}
+      {sitterProfile.reviews?.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+          <h2 className="text-base font-semibold text-gray-700 mb-4">
+            Reviews ({sitterProfile.reviews.length})
+          </h2>
+          <div className="flex flex-col gap-5">
+            {sitterProfile.reviews.map((review) => (
+              <div key={review.id} className="flex items-start gap-3">
+                {/* Author avatar */}
+                {review.author.avatarUrl ? (
+                  <img
+                    src={review.author.avatarUrl}
+                    alt={`${review.author.firstName}'s avatar`}
+                    className="w-9 h-9 rounded-full object-cover shrink-0"
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-sm shrink-0">
+                    {review.author.firstName?.[0]}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <p className="text-sm font-semibold text-gray-800">
+                      {review.author.firstName} {review.author.lastName}
+                    </p>
+                    <span className="text-yellow-500 text-sm">
+                      {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      {new Date(review.createdAt).toLocaleDateString('en-US', {
+                        month: 'short', day: 'numeric', year: 'numeric',
+                      })}
+                    </span>
+                  </div>
+                  {review.text && (
+                    <p className="text-sm text-gray-600 leading-relaxed">{review.text}</p>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         </div>

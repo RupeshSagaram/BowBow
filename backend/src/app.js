@@ -36,6 +36,9 @@ app.use('/api/sitters', require('./routes/sitters'));
 // Booking routes (create and manage bookings between owners and sitters)
 app.use('/api/bookings', require('./routes/bookings'));
 
+// Review routes (post-stay ratings and reviews)
+app.use('/api/reviews', require('./routes/reviews'));
+
 // --- 404 handler (must be after all routes) ---
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });

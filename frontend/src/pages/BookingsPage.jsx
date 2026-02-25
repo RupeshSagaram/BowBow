@@ -10,11 +10,16 @@
 //   CANCELLED → gray
 //   COMPLETED → blue
 //
-// Actions:
-//   Owner on PENDING: [Cancel Request]
-//   Sitter on PENDING: [Confirm] [Decline]
-//   Other statuses: no action buttons
+// Actions for owners:
+//   PENDING/CONFIRMED → [Cancel Request]
+//   COMPLETED + no review → inline review form (star selector + optional text)
+//   COMPLETED + reviewed  → shows the submitted review
+//
+// Actions for sitters:
+//   PENDING   → [Confirm] [Decline]
+//   CONFIRMED → [Mark as Complete]
 
+import { useState } from 'react';
 import { useBookings } from '../hooks/useBookings';
 import { useDbUser }   from '../hooks/useDbUser';
 import { Link }        from 'react-router-dom';
@@ -27,7 +32,7 @@ const STATUS_STYLES = {
   COMPLETED: 'bg-blue-100   text-blue-700',
 };
 
-// Format a Date object as "Mon DD, YYYY"
+// Format a Date string as "Mon DD, YYYY"
 function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString('en-US', {
     month: 'short',
@@ -36,8 +41,99 @@ function formatDate(dateStr) {
   });
 }
 
-// A single booking card row, with optional action buttons
-function BookingCard({ booking, actions }) {
+// Render N filled stars + (5-N) empty stars as text
+function StarDisplay({ rating }) {
+  return (
+    <span className="text-yellow-500 tracking-tight">
+      {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
+    </span>
+  );
+}
+
+// Interactive star selector — calls onChange(rating) when a star is clicked
+function StarSelector({ value, onChange }) {
+  const [hovered, setHovered] = useState(0);
+  const display = hovered || value;
+
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          onClick={() => onChange(star)}
+          onMouseEnter={() => setHovered(star)}
+          onMouseLeave={() => setHovered(0)}
+          className={`text-2xl transition-colors ${
+            star <= display ? 'text-yellow-400' : 'text-gray-300'
+          }`}
+        >
+          ★
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// Inline review form shown beneath a COMPLETED owner booking card
+function ReviewForm({ bookingId, onSubmit }) {
+  const [rating,      setRating]      = useState(0);
+  const [text,        setText]        = useState('');
+  const [submitting,  setSubmitting]  = useState(false);
+  const [error,       setError]       = useState(null);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!rating) return setError('Please select a star rating.');
+    setError(null);
+    setSubmitting(true);
+    try {
+      await onSubmit(bookingId, rating, text);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="border-t border-gray-100 pt-4 mt-2">
+      <p className="text-sm font-medium text-gray-700 mb-2">Leave a review</p>
+      <StarSelector value={rating} onChange={setRating} />
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        rows={2}
+        placeholder="Share your experience… (optional)"
+        className="w-full mt-3 border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-teal-400 resize-none"
+      />
+      {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
+      <button
+        type="submit"
+        disabled={submitting}
+        className="mt-3 bg-teal-600 hover:bg-teal-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors"
+      >
+        {submitting ? 'Submitting…' : 'Submit Review'}
+      </button>
+    </form>
+  );
+}
+
+// Inline review display shown when a review already exists on the booking
+function ReviewDisplay({ review }) {
+  return (
+    <div className="border-t border-gray-100 pt-4 mt-2">
+      <p className="text-sm font-medium text-gray-700 mb-1">Your review</p>
+      <StarDisplay rating={review.rating} />
+      {review.text && (
+        <p className="text-sm text-gray-500 mt-1 italic">"{review.text}"</p>
+      )}
+    </div>
+  );
+}
+
+// A single booking card with optional action buttons and review section
+function BookingCard({ booking, actions, reviewSection }) {
   const statusStyle = STATUS_STYLES[booking.status] ?? 'bg-gray-100 text-gray-500';
 
   return (
@@ -81,7 +177,6 @@ function BookingCard({ booking, actions }) {
             <button
               key={btn.label}
               onClick={btn.onClick}
-              disabled={btn.disabled}
               className={btn.className}
             >
               {btn.label}
@@ -89,12 +184,15 @@ function BookingCard({ booking, actions }) {
           ))}
         </div>
       )}
+
+      {/* Review section (form or display) */}
+      {reviewSection}
     </div>
   );
 }
 
 export default function BookingsPage() {
-  const { ownerBookings, sitterBookings, loading, error, updateBookingStatus } = useBookings();
+  const { ownerBookings, sitterBookings, loading, error, updateBookingStatus, createReview } = useBookings();
   const { dbUser, loading: userLoading } = useDbUser();
 
   const isOwner  = dbUser?.role === 'OWNER'  || dbUser?.role === 'BOTH';
@@ -154,10 +252,19 @@ export default function BookingsPage() {
 
               const canCancel = booking.status === 'PENDING' || booking.status === 'CONFIRMED';
 
+              // Review section: show form or existing review for COMPLETED bookings
+              let reviewSection = null;
+              if (booking.status === 'COMPLETED') {
+                reviewSection = booking.review
+                  ? <ReviewDisplay review={booking.review} />
+                  : <ReviewForm bookingId={booking.id} onSubmit={createReview} />;
+              }
+
               return (
                 <BookingCard
                   key={booking.id}
                   booking={booking}
+                  reviewSection={reviewSection}
                   actions={{
                     label,
                     buttons: canCancel
@@ -188,29 +295,37 @@ export default function BookingsPage() {
                 ? `From: ${ownerUser.firstName} ${ownerUser.lastName}`
                 : 'Owner info unavailable';
 
-              const isPending = booking.status === 'PENDING';
+              const isPending   = booking.status === 'PENDING';
+              const isConfirmed = booking.status === 'CONFIRMED';
+
+              const buttons = [];
+              if (isPending) {
+                buttons.push(
+                  {
+                    label:     'Confirm',
+                    onClick:   () => updateBookingStatus(booking.id, 'CONFIRMED'),
+                    className: 'text-sm font-semibold bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl transition-colors',
+                  },
+                  {
+                    label:     'Decline',
+                    onClick:   () => updateBookingStatus(booking.id, 'CANCELLED'),
+                    className: 'text-sm font-medium text-gray-600 border border-gray-300 hover:border-gray-400 hover:text-gray-800 px-4 py-2 rounded-xl transition-colors',
+                  }
+                );
+              } else if (isConfirmed) {
+                buttons.push({
+                  label:     'Mark as Complete',
+                  onClick:   () => updateBookingStatus(booking.id, 'COMPLETED'),
+                  className: 'text-sm font-medium text-blue-600 border border-blue-300 hover:border-blue-400 hover:text-blue-800 px-4 py-2 rounded-xl transition-colors',
+                });
+              }
 
               return (
                 <BookingCard
                   key={booking.id}
                   booking={booking}
-                  actions={{
-                    label,
-                    buttons: isPending
-                      ? [
-                          {
-                            label:     'Confirm',
-                            onClick:   () => updateBookingStatus(booking.id, 'CONFIRMED'),
-                            className: 'text-sm font-semibold bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl transition-colors',
-                          },
-                          {
-                            label:     'Decline',
-                            onClick:   () => updateBookingStatus(booking.id, 'CANCELLED'),
-                            className: 'text-sm font-medium text-gray-600 border border-gray-300 hover:border-gray-400 hover:text-gray-800 px-4 py-2 rounded-xl transition-colors',
-                          },
-                        ]
-                      : [],
-                  }}
+                  reviewSection={null}
+                  actions={{ label, buttons }}
                 />
               );
             })}

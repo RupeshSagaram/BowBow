@@ -101,6 +101,31 @@ export function useBookings() {
     return updated;
   }
 
+  // Create a review for a COMPLETED booking — attaches review to the booking in ownerBookings
+  async function createReview(bookingId, rating, text) {
+    const token    = await getToken();
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/reviews`, {
+      method:  'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization:  `Bearer ${token}`,
+      },
+      body: JSON.stringify({ bookingId, rating, text: text || undefined }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || 'Failed to submit review');
+    }
+
+    const data = await response.json();
+    // Attach the new review to the matching booking so the form disappears
+    setOwnerBookings((prev) =>
+      prev.map((b) => (b.id === bookingId ? { ...b, review: data.review } : b))
+    );
+    return data.review;
+  }
+
   return {
     ownerBookings,
     sitterBookings,
@@ -108,6 +133,7 @@ export function useBookings() {
     error,
     createBooking,
     updateBookingStatus,
+    createReview,
     refetch: fetchBookings,
   };
 }

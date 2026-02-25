@@ -64,7 +64,10 @@ model User {
   sitterProfile SitterProfile?
 
   // bookings made by this user as a pet owner
-  ownerBookings Booking[] @relation("OwnerBookings")
+  ownerBookings  Booking[]  @relation("OwnerBookings")
+
+  // reviews written by this user (as a pet owner reviewing a sitter)
+  reviewsWritten Review[]   @relation("ReviewsWritten")
 
   // Prisma manages these automatically
   createdAt DateTime @default(now())
@@ -136,6 +139,9 @@ model SitterProfile {
   // bookings received by this sitter
   bookings        Booking[]
 
+  // reviews left for this sitter by owners
+  reviews         Review[]
+
   // Prisma manages these automatically
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -167,7 +173,36 @@ model Booking {
 
   status          BookingStatus @default(PENDING)
 
+  // review left by the owner after the stay (one-to-one, optional)
+  review          Review?
+
   // Prisma manages these automatically
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+// Review maps to a "reviews" table.
+// Created by a pet owner after a COMPLETED booking to rate and review the sitter.
+// One review per booking (@unique on bookingId).
+model Review {
+  id              String        @id @default(cuid())
+
+  // One review per booking
+  bookingId       String        @unique
+  booking         Booking       @relation(fields: [bookingId], references: [id])
+
+  // The pet owner who wrote this review
+  authorId        String
+  author          User          @relation("ReviewsWritten", fields: [authorId], references: [id])
+
+  // The sitter being reviewed
+  sitterProfileId String
+  sitterProfile   SitterProfile @relation(fields: [sitterProfileId], references: [id])
+
+  // Content
+  rating          Int           // 1–5 stars
+  text            String?       // optional written review
+
+  // Prisma manages this automatically
+  createdAt       DateTime @default(now())
 }

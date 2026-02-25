@@ -22,7 +22,9 @@
 const prisma = require('../utils/prismaClient');
 
 // Fields from User to include in public sitter responses
+// id is included so the frontend can detect self-viewing on SitterPage
 const PUBLIC_USER_FIELDS = {
+  id:        true,
   firstName: true,
   lastName:  true,
   avatarUrl: true,
@@ -115,7 +117,15 @@ async function getSitter(req, res) {
     const sitterProfile = await prisma.sitterProfile.findUnique({
       where: { id },
       include: {
-        user: { select: PUBLIC_USER_FIELDS },
+        user:    { select: PUBLIC_USER_FIELDS },
+        reviews: {
+          include: {
+            author: {
+              select: { id: true, firstName: true, lastName: true, avatarUrl: true },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
       },
     });
 
@@ -123,7 +133,14 @@ async function getSitter(req, res) {
       return res.status(404).json({ error: 'Sitter not found' });
     }
 
-    res.json({ sitterProfile });
+    // Compute average rating from the included reviews
+    const avgRating = sitterProfile.reviews.length > 0
+      ? Math.round(
+          (sitterProfile.reviews.reduce((sum, r) => sum + r.rating, 0) / sitterProfile.reviews.length) * 10
+        ) / 10
+      : null;
+
+    res.json({ sitterProfile: { ...sitterProfile, avgRating } });
   } catch (error) {
     console.error('Error fetching sitter:', error);
     res.status(500).json({ error: 'Failed to fetch sitter' });
@@ -138,12 +155,24 @@ async function getAllSitters(req, res) {
     const sitters = await prisma.sitterProfile.findMany({
       where: { isAvailable: true },
       include: {
-        user: { select: PUBLIC_USER_FIELDS },
+        user:    { select: PUBLIC_USER_FIELDS },
+        reviews: { select: { rating: true } }, // just ratings — avoid loading full review text for the list
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    res.json({ sitters });
+    // Attach avgRating and reviewCount to each sitter; strip out the raw ratings array
+    const sittersWithRatings = sitters.map((s) => {
+      const avgRating = s.reviews.length > 0
+        ? Math.round(
+            (s.reviews.reduce((sum, r) => sum + r.rating, 0) / s.reviews.length) * 10
+          ) / 10
+        : null;
+      const { reviews, ...rest } = s;
+      return { ...rest, avgRating, reviewCount: reviews.length };
+    });
+
+    res.json({ sitters: sittersWithRatings });
   } catch (error) {
     console.error('Error fetching sitters:', error);
     res.status(500).json({ error: 'Failed to fetch sitters' });
