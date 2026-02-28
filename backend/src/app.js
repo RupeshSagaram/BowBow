@@ -48,6 +48,9 @@ app.use('/api/reviews', require('./routes/reviews'));
 // Message routes (per-booking message threads between owner and sitter)
 app.use('/api/messages', require('./routes/messages'));
 
+// Admin routes (platform admin panel — requires isAdmin flag on user)
+app.use('/api/admin', require('./routes/admin'));
+
 // --- 404 handler (must be after all routes) ---
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });

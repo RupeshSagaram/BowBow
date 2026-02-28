@@ -57,6 +57,13 @@ model User {
   // Once the user picks a role on /onboarding, this is set to true.
   hasCompletedOnboarding Boolean @default(false)
 
+  // isAdmin: platform administrators can access the /admin panel
+  // Separate from role (OWNER/SITTER/BOTH) — admin is an orthogonal permission
+  isAdmin  Boolean @default(false)
+
+  // isBanned: banned users have their sitter listing hidden and see a suspended message
+  isBanned Boolean @default(false)
+
   // pets: a user can own many pets (one-to-many relation)
   pets      Pet[]
 
