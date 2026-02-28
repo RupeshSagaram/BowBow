@@ -189,7 +189,7 @@ model Booking {
 
 // Message maps to a "messages" table.
 // One message thread per booking — both owner and sitter can send messages.
-// Polled by the frontend every 5 seconds for new messages (no WebSockets needed for MVP).
+// Delivered in real-time via Socket.io; initial load uses REST GET /api/messages/:bookingId.
 model Message {
   id        String   @id @default(cuid())
 

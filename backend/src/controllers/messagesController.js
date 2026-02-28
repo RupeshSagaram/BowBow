@@ -11,7 +11,8 @@
 //   Creates a new message in the thread. body: { text }
 //   Returns the created message with sender data attached.
 
-const prisma = require('../utils/prismaClient');
+const prisma    = require('../utils/prismaClient');
+const { getIO } = require('../socket');
 
 // Sender fields to include in every message response
 const SENDER_FIELDS = {
@@ -92,6 +93,10 @@ async function sendMessage(req, res) {
       data:    { bookingId, senderId: access.user.id, text: text.trim() },
       include: { sender: SENDER_FIELDS },
     });
+
+    // Broadcast to all sockets in this booking's room.
+    // The sender's own socket receives it too; the frontend deduplicates by id.
+    getIO().to(`booking:${bookingId}`).emit('new_message', { message });
 
     res.status(201).json({ message });
   } catch (error) {
