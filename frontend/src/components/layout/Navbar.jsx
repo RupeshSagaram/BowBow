@@ -18,6 +18,7 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth, UserButton } from '@clerk/clerk-react';
+import { useDbUser } from '../../hooks/useDbUser';
 
 // Shared active/inactive class logic for NavLinks
 const navClass = ({ isActive }) =>
@@ -27,6 +28,7 @@ const navClass = ({ isActive }) =>
 
 export default function Navbar() {
   const { isSignedIn, isLoaded } = useAuth();
+  const { dbUser } = useDbUser();
   const [menuOpen, setMenuOpen] = useState(false);
 
   function closeMenu() {
@@ -50,6 +52,9 @@ export default function Navbar() {
           {isSignedIn && <NavLink to="/messages"  className={navClass}>Messages</NavLink>}
           {isSignedIn && <NavLink to="/pets"      className={navClass}>My Pets</NavLink>}
           {isSignedIn && <NavLink to="/profile"   className={navClass}>Profile</NavLink>}
+          {isSignedIn && dbUser?.isAdmin && (
+            <NavLink to="/admin" className={navClass}>Admin</NavLink>
+          )}
         </div>
 
         {/* Right side: auth area + hamburger */}
@@ -97,6 +102,9 @@ export default function Navbar() {
           {isSignedIn && <NavLink to="/messages"  className={navClass} onClick={closeMenu}>Messages</NavLink>}
           {isSignedIn && <NavLink to="/pets"      className={navClass} onClick={closeMenu}>My Pets</NavLink>}
           {isSignedIn && <NavLink to="/profile"   className={navClass} onClick={closeMenu}>Profile</NavLink>}
+          {isSignedIn && dbUser?.isAdmin && (
+            <NavLink to="/admin" className={navClass} onClick={closeMenu}>Admin</NavLink>
+          )}
           {isLoaded && !isSignedIn && (
             <Link
               to="/sign-in"

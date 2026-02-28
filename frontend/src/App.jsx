@@ -14,6 +14,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import AdminRoute from './components/auth/AdminRoute';
 import HomePage from './pages/HomePage';
 import SearchPage from './pages/SearchPage';
 import SignInPage from './pages/SignInPage';
@@ -26,6 +27,10 @@ import SitterSetupPage from './pages/SitterSetupPage';
 import SitterPage from './pages/SitterPage';
 import BookingsPage from './pages/BookingsPage';
 import MessagesPage from './pages/MessagesPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
+import AdminUsersPage from './pages/AdminUsersPage';
+import AdminBookingsPage from './pages/AdminBookingsPage';
+import AdminReviewsPage from './pages/AdminReviewsPage';
 
 function App() {
   return (
@@ -96,6 +101,40 @@ function App() {
               <ProtectedRoute>
                 <MessagesPage />
               </ProtectedRoute>
+            }
+          />
+
+          {/* Admin routes — require isAdmin === true in DB */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminDashboardPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <AdminRoute>
+                <AdminUsersPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/bookings"
+            element={
+              <AdminRoute>
+                <AdminBookingsPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/reviews"
+            element={
+              <AdminRoute>
+                <AdminReviewsPage />
+              </AdminRoute>
             }
           />
         </Routes>
