@@ -24,6 +24,8 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDbUser } from '../hooks/useDbUser';
 import { useSitterProfile } from '../hooks/useSitterProfile';
+import { useAvailability } from '../hooks/useAvailability';
+import AvailabilityCalendar from '../components/AvailabilityCalendar';
 
 const SERVICES_OPTIONS = [
   'Boarding',
@@ -46,6 +48,7 @@ const EMPTY_FORM = {
 export default function SitterSetupPage() {
   const { dbUser, loading: userLoading } = useDbUser();
   const { sitterProfile, loading: profileLoading, saveListing } = useSitterProfile();
+  const { blockedRanges, bookedRanges, saveBlocks } = useAvailability(sitterProfile?.id);
 
   const [form, setForm]       = useState(EMPTY_FORM);
   const [saving, setSaving]   = useState(false);
@@ -315,6 +318,23 @@ export default function SitterSetupPage() {
         </button>
 
       </div>
+
+      {/* Availability Calendar — only shown after listing is created */}
+      {sitterProfile && (
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mt-6">
+          <h2 className="text-lg font-semibold text-gray-800 mb-1">Availability Calendar</h2>
+          <p className="text-sm text-gray-500 mb-4">
+            Block out dates when you're not available. Owners won't be able to book those dates.
+          </p>
+          <AvailabilityCalendar
+            blockedRanges={blockedRanges}
+            bookedRanges={bookedRanges}
+            editMode
+            onSave={saveBlocks}
+          />
+        </div>
+      )}
+
     </div>
   );
 }

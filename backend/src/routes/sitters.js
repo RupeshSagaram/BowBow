@@ -31,7 +31,13 @@ router.get('/me', requireAuth(), sittersController.getMyListing);
 // PUT /api/sitters/me — creates or updates the signed-in user's sitter profile
 router.put('/me', requireAuth(), sittersController.upsertMyListing);
 
+// PUT /api/sitters/me/availability — replaces all blocked date ranges for the sitter
+router.put('/me/availability', requireAuth(), sittersController.updateMyAvailability);
+
 // GET /api/sitters/:id — returns a single sitter's public profile (public)
 router.get('/:id', sittersController.getSitter);
+
+// GET /api/sitters/:id/availability — returns blocked ranges + booked ranges (public)
+router.get('/:id/availability', sittersController.getSitterAvailability);
 
 module.exports = router;

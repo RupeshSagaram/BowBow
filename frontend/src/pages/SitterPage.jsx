@@ -21,6 +21,8 @@ import { useState, useEffect } from 'react';
 import { useParams, Link }     from 'react-router-dom';
 import { useAuth }             from '@clerk/clerk-react';
 import { useDbUser }           from '../hooks/useDbUser';
+import { useAvailability }     from '../hooks/useAvailability';
+import AvailabilityCalendar    from '../components/AvailabilityCalendar';
 
 // Maps service names to emoji icons shown on the profile
 const SERVICE_ICONS = {
@@ -46,6 +48,14 @@ function computeNights(startDate, endDate) {
 
 const EMPTY_FORM = { service: '', petId: '', startDate: '', endDate: '', message: '' };
 
+// Returns true if [startStr, endStr] overlaps any range in the given array
+function isRangeOverlapping(startStr, endStr, ranges) {
+  if (!startStr || !endStr) return false;
+  const start = new Date(startStr);
+  const end   = new Date(endStr);
+  return ranges.some((r) => start <= new Date(r.endDate) && end >= new Date(r.startDate));
+}
+
 export default function SitterPage() {
   const { id } = useParams();
 
@@ -58,6 +68,9 @@ export default function SitterPage() {
   const { isSignedIn, isLoaded, getToken } = useAuth();
   const { dbUser } = useDbUser();
 
+  // Sitter availability — fetched for the calendar and booking validation
+  const { blockedRanges, bookedRanges } = useAvailability(id);
+
   // Owner's pets for the booking form dropdown
   const [pets, setPets] = useState([]);
 
@@ -66,6 +79,7 @@ export default function SitterPage() {
   const [bookingSubmitting, setBookingSubmitting] = useState(false);
   const [bookingSuccess,    setBookingSuccess]    = useState(false);
   const [bookingError,      setBookingError]      = useState(null);
+  const [dateRangeError,    setDateRangeError]    = useState(null);
 
   // ── Fetch sitter profile ───────────────────────────────────────────────
 
@@ -120,7 +134,20 @@ export default function SitterPage() {
 
   function handleBookingChange(e) {
     const { name, value } = e.target;
-    setBookingForm((prev) => ({ ...prev, [name]: value }));
+    const updated = { ...bookingForm, [name]: value };
+    setBookingForm(updated);
+
+    // Check if the selected date range overlaps any blocked or booked period
+    if (updated.startDate && updated.endDate) {
+      const allRanges = [...blockedRanges, ...bookedRanges];
+      if (isRangeOverlapping(updated.startDate, updated.endDate, allRanges)) {
+        setDateRangeError('Those dates overlap an unavailable period. Please choose different dates.');
+      } else {
+        setDateRangeError(null);
+      }
+    } else {
+      setDateRangeError(null);
+    }
   }
 
   async function handleBookingSubmit(e) {
@@ -301,6 +328,15 @@ export default function SitterPage() {
           </div>
         </div>
       )}
+
+      {/* ── Availability calendar (public) ── */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+        <h2 className="text-base font-semibold text-gray-700 mb-4">Availability</h2>
+        <AvailabilityCalendar
+          blockedRanges={blockedRanges}
+          bookedRanges={bookedRanges}
+        />
+      </div>
 
       {/* ── Reviews section (public) ── */}
       {sitterProfile.reviews?.length > 0 && (
@@ -495,7 +531,14 @@ export default function SitterPage() {
                 </p>
               )}
 
-              {/* Error */}
+              {/* Date availability warning */}
+              {dateRangeError && (
+                <p className="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                  {dateRangeError}
+                </p>
+              )}
+
+              {/* Server error */}
               {bookingError && (
                 <p className="text-sm text-red-500">{bookingError}</p>
               )}

@@ -179,4 +179,92 @@ async function getAllSitters(req, res) {
   }
 }
 
-module.exports = { getMyListing, upsertMyListing, getSitter, getAllSitters };
+// ── Availability ───────────────────────────────────────────────────────────
+
+// GET /api/sitters/:id/availability  (public)
+// Returns the sitter's manually blocked date ranges + active booking date ranges.
+// The frontend merges these two arrays to determine which dates are unavailable.
+async function getSitterAvailability(req, res) {
+  const { id } = req.params;
+
+  try {
+    const sitterProfile = await prisma.sitterProfile.findUnique({ where: { id } });
+    if (!sitterProfile) return res.status(404).json({ error: 'Sitter not found' });
+
+    const [blockedRanges, bookedRanges] = await Promise.all([
+      prisma.availabilityBlock.findMany({
+        where:   { sitterProfileId: id },
+        select:  { id: true, startDate: true, endDate: true },
+        orderBy: { startDate: 'asc' },
+      }),
+      prisma.booking.findMany({
+        where:  { sitterProfileId: id, status: { in: ['PENDING', 'CONFIRMED'] } },
+        select: { id: true, startDate: true, endDate: true, status: true },
+        orderBy: { startDate: 'asc' },
+      }),
+    ]);
+
+    return res.json({ blockedRanges, bookedRanges });
+  } catch (err) {
+    console.error('getSitterAvailability error:', err);
+    return res.status(500).json({ error: 'Failed to fetch availability' });
+  }
+}
+
+// PUT /api/sitters/me/availability  (auth required)
+// Replaces all manual availability blocks for the authenticated sitter.
+// Body: { blocks: [{ startDate, endDate }] }
+async function updateMyAvailability(req, res) {
+  const { userId } = req.auth;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where:   { clerkId: userId },
+      include: { sitterProfile: true },
+    });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user.sitterProfile) return res.status(404).json({ error: 'No sitter listing found' });
+
+    const { blocks } = req.body;
+    if (!Array.isArray(blocks)) {
+      return res.status(400).json({ error: 'blocks must be an array' });
+    }
+
+    const sitterProfileId = user.sitterProfile.id;
+
+    // Validate each block
+    for (const b of blocks) {
+      const start = new Date(b.startDate);
+      const end   = new Date(b.endDate);
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        return res.status(400).json({ error: 'Each block must have valid startDate and endDate' });
+      }
+      if (end <= start) {
+        return res.status(400).json({ error: 'endDate must be after startDate for each block' });
+      }
+    }
+
+    // Replace-all: delete existing, create new
+    await prisma.availabilityBlock.deleteMany({ where: { sitterProfileId } });
+
+    const created = await Promise.all(
+      blocks.map((b) =>
+        prisma.availabilityBlock.create({
+          data: {
+            sitterProfileId,
+            startDate: new Date(b.startDate),
+            endDate:   new Date(b.endDate),
+          },
+          select: { id: true, startDate: true, endDate: true },
+        })
+      )
+    );
+
+    return res.json({ blocks: created });
+  } catch (err) {
+    console.error('updateMyAvailability error:', err);
+    return res.status(500).json({ error: 'Failed to update availability' });
+  }
+}
+
+module.exports = { getMyListing, upsertMyListing, getSitter, getAllSitters, getSitterAvailability, updateMyAvailability };

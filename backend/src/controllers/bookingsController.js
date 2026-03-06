@@ -86,6 +86,31 @@ async function createBooking(req, res) {
       return res.status(400).json({ error: 'Sitter does not offer that service' });
     }
 
+    // Check for manual availability blocks overlapping the requested dates
+    const blocked = await prisma.availabilityBlock.findFirst({
+      where: {
+        sitterProfileId,
+        startDate: { lte: end },
+        endDate:   { gte: start },
+      },
+    });
+    if (blocked) {
+      return res.status(409).json({ error: 'Sitter is not available on those dates' });
+    }
+
+    // Check for existing active bookings overlapping the requested dates
+    const conflict = await prisma.booking.findFirst({
+      where: {
+        sitterProfileId,
+        status:    { in: ['PENDING', 'CONFIRMED'] },
+        startDate: { lte: end },
+        endDate:   { gte: start },
+      },
+    });
+    if (conflict) {
+      return res.status(409).json({ error: 'Those dates are already booked' });
+    }
+
     // Compute total price: rate × number of nights (minimum 1)
     const nights = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)));
     const totalPrice = sitterProfile.rate * nights;

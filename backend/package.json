@@ -6,7 +6,8 @@
   "scripts": {
     "build": "npx prisma generate",
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "test": "vitest run"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +23,7 @@
     "socket.io": "^4.8.3"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "vitest": "^4.0.18"
   }
 }

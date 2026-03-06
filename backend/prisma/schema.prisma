@@ -152,6 +152,9 @@ model SitterProfile {
   // reviews left for this sitter by owners
   reviews         Review[]
 
+  // date ranges the sitter has manually blocked (vacations, personal days, etc.)
+  availabilityBlocks AvailabilityBlock[]
+
   // Prisma manages these automatically
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -238,4 +241,19 @@ model Review {
 
   // Prisma manages this automatically
   createdAt       DateTime @default(now())
+}
+
+// AvailabilityBlock maps to an "availability_blocks" table.
+// Each row represents a date range the sitter has manually marked as unavailable.
+// These are used alongside active bookings to show owners when a sitter is busy.
+model AvailabilityBlock {
+  id              String        @id @default(cuid())
+
+  sitterProfileId String
+  sitterProfile   SitterProfile @relation(fields: [sitterProfileId], references: [id], onDelete: Cascade)
+
+  startDate       DateTime
+  endDate         DateTime
+
+  createdAt       DateTime      @default(now())
 }
