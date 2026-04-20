@@ -251,7 +251,7 @@ export default function BookingsPage() {
       )}
 
       {/* ── Owner section ── */}
-      {isOwner && ownerBookings.length > 0 && (
+      {ownerBookings.length > 0 && (
         <section className="mb-10">
           <h2 className="text-xl font-semibold text-gray-700 mb-4">My Booking Requests</h2>
           <div className="flex flex-col gap-4">
