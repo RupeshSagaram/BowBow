@@ -61,7 +61,7 @@ async function getMyListing(req, res) {
 async function upsertMyListing(req, res) {
   const { userId } = req.auth;
 
-  const { rate, services, city, state, zipCode, isAvailable, yearsExperience } = req.body;
+  const { rate, services, city, state, zipCode, isAvailable, yearsExperience, upiId } = req.body;
 
   // rate is required and must be a positive number
   if (rate === undefined || rate === null || rate === '') {
@@ -93,6 +93,7 @@ async function upsertMyListing(req, res) {
       yearsExperience: yearsExperience != null && yearsExperience !== ''
                          ? parseInt(yearsExperience, 10)
                          : null,
+      upiId:           upiId ? upiId.trim() : null,
     };
 
     // upsert: creates if it doesn't exist, updates if it does — safe to call either way

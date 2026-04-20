@@ -47,7 +47,7 @@ export default function SitterCard({ sitter }) {
           {/* Rate + rating + location */}
           <div className="flex flex-wrap items-center gap-2 mt-0.5">
             <span className="text-xs font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full">
-              ${sitter.rate}/night
+              ₹{sitter.rate}/night
             </span>
             {sitter.avgRating != null && (
               <span className="text-xs font-medium text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full">

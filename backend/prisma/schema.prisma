@@ -27,6 +27,12 @@ enum BookingStatus {
   COMPLETED    // stay is finished
 }
 
+// PaymentStatus tracks whether the owner has paid the sitter.
+enum PaymentStatus {
+  PENDING  // confirmed but payment not yet marked by owner
+  PAID     // owner marked as paid via UPI
+}
+
 // User maps to a "users" table in PostgreSQL.
 // Each person who signs up gets one row in this table.
 model User {
@@ -128,7 +134,7 @@ model SitterProfile {
   userId          String   @unique
   user            User     @relation(fields: [userId], references: [id])
 
-  // rate: per-night rate in USD (required when creating a listing)
+  // rate: per-night rate in INR (required when creating a listing)
   rate            Float
 
   // services: array of service names the sitter offers
@@ -142,6 +148,9 @@ model SitterProfile {
 
   // isAvailable: false = sitter is taking a break and won't appear in search
   isAvailable     Boolean  @default(true)
+
+  // UPI ID for direct payments from owners (e.g. "name@upi")
+  upiId           String?
 
   // Optional context for owners
   yearsExperience Int?
@@ -185,6 +194,9 @@ model Booking {
   message         String?       // optional note from owner to sitter
 
   status          BookingStatus @default(PENDING)
+
+  // payment made by the owner for this booking (one-to-one, optional)
+  payment         Payment?
 
   // review left by the owner after the stay (one-to-one, optional)
   review          Review?
@@ -241,6 +253,25 @@ model Review {
 
   // Prisma manages this automatically
   createdAt       DateTime @default(now())
+}
+
+// Payment maps to a "payments" table.
+// Created when the owner marks they have paid the sitter via UPI.
+// One payment per booking (@unique on bookingId).
+model Payment {
+  id                String        @id @default(cuid())
+
+  bookingId         String        @unique
+  booking           Booking       @relation(fields: [bookingId], references: [id])
+
+  amount            Float
+  status            PaymentStatus @default(PAID)
+
+  // Optional UPI transaction reference (UTR) the owner can enter for records
+  upiTransactionRef String?
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 }
 
 // AvailabilityBlock maps to an "availability_blocks" table.

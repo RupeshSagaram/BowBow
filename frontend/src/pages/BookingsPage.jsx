@@ -20,9 +20,10 @@
 //   CONFIRMED → [Mark as Complete]
 
 import { useState } from 'react';
-import { useBookings } from '../hooks/useBookings';
-import { useDbUser }   from '../hooks/useDbUser';
-import { Link }        from 'react-router-dom';
+import { useBookings }    from '../hooks/useBookings';
+import { useDbUser }      from '../hooks/useDbUser';
+import { Link }           from 'react-router-dom';
+import PaymentSection     from '../components/PaymentSection';
 
 // Colour-coded status badges
 const STATUS_STYLES = {
@@ -162,7 +163,7 @@ function BookingCard({ booking, actions, reviewSection }) {
       {/* Second row: sitter or owner info + price */}
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <p className="text-sm text-gray-500">{actions.label}</p>
-        <p className="text-sm font-semibold text-teal-700">${booking.totalPrice} total</p>
+        <p className="text-sm font-semibold text-teal-700">₹{booking.totalPrice} total</p>
       </div>
 
       {/* Optional message */}
@@ -192,7 +193,7 @@ function BookingCard({ booking, actions, reviewSection }) {
 }
 
 export default function BookingsPage() {
-  const { ownerBookings, sitterBookings, loading, error, updateBookingStatus, createReview } = useBookings();
+  const { ownerBookings, sitterBookings, loading, error, updateBookingStatus, markAsPaid, createReview } = useBookings();
   const { dbUser, loading: userLoading } = useDbUser();
   const [actionError, setActionError] = useState(null);
 
@@ -262,6 +263,14 @@ export default function BookingsPage() {
 
               const canCancel = booking.status === 'PENDING' || booking.status === 'CONFIRMED';
 
+              // Payment section for CONFIRMED bookings (owner pays sitter via UPI)
+              let paymentSection = null;
+              if (booking.status === 'CONFIRMED') {
+                paymentSection = (
+                  <PaymentSection booking={booking} onMarkPaid={markAsPaid} />
+                );
+              }
+
               // Review section: show form or existing review for COMPLETED bookings
               let reviewSection = null;
               if (booking.status === 'COMPLETED') {
@@ -274,7 +283,7 @@ export default function BookingsPage() {
                 <BookingCard
                   key={booking.id}
                   booking={booking}
-                  reviewSection={reviewSection}
+                  reviewSection={<>{paymentSection}{reviewSection}</>}
                   actions={{
                     label,
                     buttons: canCancel
@@ -337,11 +346,29 @@ export default function BookingsPage() {
                 });
               }
 
+              // Payment status for sitter's CONFIRMED bookings
+              let sitterPaymentSection = null;
+              if (isConfirmed) {
+                sitterPaymentSection = (
+                  <div className="border-t border-gray-100 pt-3 mt-2">
+                    {booking.payment?.status === 'PAID' ? (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-50 px-2.5 py-1 rounded-full">
+                        <span>✓</span> Payment Received
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-orange-700 bg-orange-50 px-2.5 py-1 rounded-full">
+                        Awaiting Payment
+                      </span>
+                    )}
+                  </div>
+                );
+              }
+
               return (
                 <BookingCard
                   key={booking.id}
                   booking={booking}
-                  reviewSection={null}
+                  reviewSection={sitterPaymentSection}
                   actions={{ label, buttons }}
                 />
               );

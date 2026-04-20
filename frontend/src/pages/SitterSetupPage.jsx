@@ -43,6 +43,7 @@ const EMPTY_FORM = {
   zipCode:         '',
   isAvailable:     true,
   yearsExperience: '',
+  upiId:           '',
 };
 
 export default function SitterSetupPage() {
@@ -68,6 +69,7 @@ export default function SitterSetupPage() {
         yearsExperience: sitterProfile.yearsExperience != null
                            ? String(sitterProfile.yearsExperience)
                            : '',
+        upiId:           sitterProfile.upiId ?? '',
       });
     }
   }, [sitterProfile]);
@@ -119,6 +121,7 @@ export default function SitterSetupPage() {
       yearsExperience: form.yearsExperience !== ''
                          ? parseInt(form.yearsExperience, 10)
                          : null,
+      upiId:           form.upiId.trim() || null,
     };
 
     try {
@@ -194,16 +197,16 @@ export default function SitterSetupPage() {
         {/* Rate */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Nightly Rate (USD) <span className="text-red-500">*</span>
+            Nightly Rate (INR) <span className="text-red-500">*</span>
           </label>
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">$</span>
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">₹</span>
             <input
               type="number"
               name="rate"
               value={form.rate}
               onChange={handleChange}
-              placeholder="35.00"
+              placeholder="500"
               min="0"
               step="0.01"
               className="w-full border border-gray-300 rounded-xl pl-8 pr-4 py-2.5 text-gray-700 text-sm outline-none focus:ring-2 focus:ring-teal-400"
@@ -284,6 +287,24 @@ export default function SitterSetupPage() {
             step="1"
             className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-gray-700 text-sm outline-none focus:ring-2 focus:ring-teal-400"
           />
+        </div>
+
+        {/* UPI ID for direct payments */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            UPI ID for Payments <span className="text-gray-400 font-normal">(optional)</span>
+          </label>
+          <input
+            type="text"
+            name="upiId"
+            value={form.upiId}
+            onChange={handleChange}
+            placeholder="e.g. yourname@upi"
+            className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-gray-700 text-sm outline-none focus:ring-2 focus:ring-teal-400"
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            Owners will pay you directly to this UPI ID when they book you.
+          </p>
         </div>
 
         {/* Availability toggle */}

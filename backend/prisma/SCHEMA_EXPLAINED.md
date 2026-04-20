@@ -249,7 +249,7 @@ user            User     @relation(fields: [userId], references: [id])
 ```prisma
 rate            Float
 ```
-- The sitter's per-night rate in USD. Required — you must set a rate when creating a listing.
+- The sitter's per-night rate in INR. Required — you must set a rate when creating a listing.
 
 ```prisma
 services        String[]

@@ -126,7 +126,7 @@ export default function AdminBookingsPage() {
                   {new Date(b.startDate).toLocaleDateString()} –{' '}
                   {new Date(b.endDate).toLocaleDateString()}
                 </td>
-                <td className="px-4 py-3 text-gray-700">${b.totalPrice.toFixed(2)}</td>
+                <td className="px-4 py-3 text-gray-700">₹{b.totalPrice.toFixed(2)}</td>
                 <td className="px-4 py-3">
                   <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[b.status]}`}>
                     {b.status}

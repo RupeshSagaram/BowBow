@@ -160,6 +160,7 @@ async function getMyBookings(req, res) {
         pet:          true,
         sitterProfile: { include: { user: SITTER_USER_FIELDS } },
         review:        true,
+        payment:       true,
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -170,8 +171,9 @@ async function getMyBookings(req, res) {
       sitterBookings = await prisma.booking.findMany({
         where:   { sitterProfileId: user.sitterProfile.id },
         include: {
-          pet:   true,
-          owner: OWNER_FIELDS,
+          pet:     true,
+          owner:   OWNER_FIELDS,
+          payment: true,
         },
         orderBy: { createdAt: 'desc' },
       });

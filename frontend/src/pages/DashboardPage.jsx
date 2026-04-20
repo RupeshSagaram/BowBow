@@ -334,7 +334,7 @@ export default function DashboardPage() {
             ) : sitterProfile ? (
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-wrap items-center gap-3">
                 <span className="text-xs font-semibold text-teal-700 bg-teal-50 px-3 py-1 rounded-full">
-                  ${sitterProfile.rate}/night
+                  ₹{sitterProfile.rate}/night
                 </span>
                 <span className="text-xs text-gray-500">
                   {sitterProfile.services.length}{' '}

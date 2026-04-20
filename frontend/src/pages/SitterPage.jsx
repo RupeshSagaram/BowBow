@@ -279,7 +279,7 @@ export default function SitterPage() {
                 {sitterProfile.isAvailable ? 'Available' : 'Unavailable'}
               </span>
               <span className="text-sm font-semibold text-teal-700 bg-teal-50 px-3 py-1 rounded-full">
-                ${sitterProfile.rate}/night
+                ₹{sitterProfile.rate}/night
               </span>
               {sitterProfile.avgRating != null && (
                 <span className="text-sm font-semibold text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full">
@@ -525,7 +525,7 @@ export default function SitterPage() {
                 <p className="text-sm text-gray-600">
                   Estimated total:{' '}
                   <span className="font-semibold text-teal-700">
-                    ${previewTotal}
+                    ₹{previewTotal}
                   </span>{' '}
                   for {nights} night{nights !== 1 ? 's' : ''}
                 </p>

@@ -101,6 +101,30 @@ export function useBookings() {
     return updated;
   }
 
+  // Mark a CONFIRMED booking as paid — attaches payment record to the booking in ownerBookings
+  async function markAsPaid(bookingId, upiTransactionRef) {
+    const token    = await getToken();
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/payments`, {
+      method:  'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization:  `Bearer ${token}`,
+      },
+      body: JSON.stringify({ bookingId, upiTransactionRef: upiTransactionRef || undefined }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || 'Failed to record payment');
+    }
+
+    const data = await response.json();
+    setOwnerBookings((prev) =>
+      prev.map((b) => (b.id === bookingId ? { ...b, payment: data.payment } : b))
+    );
+    return data.payment;
+  }
+
   // Create a review for a COMPLETED booking — attaches review to the booking in ownerBookings
   async function createReview(bookingId, rating, text) {
     const token    = await getToken();
@@ -133,6 +157,7 @@ export function useBookings() {
     error,
     createBooking,
     updateBookingStatus,
+    markAsPaid,
     createReview,
     refetch: fetchBookings,
   };

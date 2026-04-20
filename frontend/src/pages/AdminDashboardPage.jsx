@@ -68,7 +68,7 @@ export default function AdminDashboardPage() {
         <StatCard label="Total Bookings" value={totalBookings} />
         <StatCard
           label="Total Revenue"
-          value={`$${(stats?.totalRevenue ?? 0).toFixed(2)}`}
+          value={`₹${(stats?.totalRevenue ?? 0).toFixed(2)}`}
           sub="from completed bookings"
         />
       </div>

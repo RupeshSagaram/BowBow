@@ -48,6 +48,9 @@ app.use('/api/reviews', require('./routes/reviews'));
 // Message routes (per-booking message threads between owner and sitter)
 app.use('/api/messages', require('./routes/messages'));
 
+// Payment routes (UPI payment tracking for bookings)
+app.use('/api/payments', require('./routes/payments'));
+
 // Admin routes (platform admin panel — requires isAdmin flag on user)
 app.use('/api/admin', require('./routes/admin'));
 
