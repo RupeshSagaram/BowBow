@@ -45,9 +45,12 @@ export default function PaymentSection({ booking, onMarkPaid }) {
   if (!upiId) {
     return (
       <div className="border-t border-gray-100 pt-4 mt-2">
-        <p className="text-sm text-gray-400 italic">
-          Awaiting payment details from sitter. Please message them for their UPI ID.
-        </p>
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+          <p className="text-sm font-medium text-amber-800">Payment details not set up</p>
+          <p className="text-xs text-amber-700 mt-0.5">
+            {sitterName} hasn't added a UPI ID to their profile yet. Please contact them directly to arrange payment.
+          </p>
+        </div>
       </div>
     );
   }

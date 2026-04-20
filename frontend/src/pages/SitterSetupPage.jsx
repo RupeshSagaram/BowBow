@@ -107,6 +107,10 @@ export default function SitterSetupPage() {
       setFormError('Please select at least one service.');
       return;
     }
+    if (!form.upiId.trim()) {
+      setFormError('Please enter your UPI ID so owners can pay you.');
+      return;
+    }
 
     setSaving(true);
     setFormError(null);
@@ -292,7 +296,7 @@ export default function SitterSetupPage() {
         {/* UPI ID for direct payments */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            UPI ID for Payments <span className="text-gray-400 font-normal">(optional)</span>
+            UPI ID for Payments <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -303,7 +307,7 @@ export default function SitterSetupPage() {
             className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-gray-700 text-sm outline-none focus:ring-2 focus:ring-teal-400"
           />
           <p className="text-xs text-gray-400 mt-1">
-            Owners will pay you directly to this UPI ID when they book you.
+            Owners pay you directly to this UPI ID after you confirm a booking.
           </p>
         </div>
 

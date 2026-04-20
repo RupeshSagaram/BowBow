@@ -67,6 +67,9 @@ async function upsertMyListing(req, res) {
   if (rate === undefined || rate === null || rate === '') {
     return res.status(400).json({ error: 'rate is required' });
   }
+  if (!upiId || !upiId.trim()) {
+    return res.status(400).json({ error: 'upiId is required' });
+  }
   const parsedRate = parseFloat(rate);
   if (isNaN(parsedRate) || parsedRate < 0) {
     return res.status(400).json({ error: 'rate must be a non-negative number' });
