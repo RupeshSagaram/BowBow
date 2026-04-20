@@ -103,26 +103,39 @@ export function useBookings() {
 
   // Mark a CONFIRMED booking as paid — attaches payment record to the booking in ownerBookings
   async function markAsPaid(bookingId, upiTransactionRef) {
-    const token    = await getToken();
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/payments`, {
-      method:  'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization:  `Bearer ${token}`,
-      },
-      body: JSON.stringify({ bookingId, upiTransactionRef: upiTransactionRef || undefined }),
-    });
+    const controller = new AbortController();
+    const timeoutId  = setTimeout(() => controller.abort(), 30000);
 
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      throw new Error(data.error || 'Failed to record payment');
+    try {
+      const token    = await getToken();
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/payments`, {
+        method:  'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization:  `Bearer ${token}`,
+        },
+        body:   JSON.stringify({ bookingId, upiTransactionRef: upiTransactionRef || undefined }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to record payment');
+      }
+
+      const data = await response.json();
+      setOwnerBookings((prev) =>
+        prev.map((b) => (b.id === bookingId ? { ...b, payment: data.payment } : b))
+      );
+      return data.payment;
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        throw new Error('Request timed out. Please check your connection and try again.');
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeoutId);
     }
-
-    const data = await response.json();
-    setOwnerBookings((prev) =>
-      prev.map((b) => (b.id === bookingId ? { ...b, payment: data.payment } : b))
-    );
-    return data.payment;
   }
 
   // Create a review for a COMPLETED booking — attaches review to the booking in ownerBookings
