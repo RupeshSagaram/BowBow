@@ -9,12 +9,6 @@ const services = [
   { icon: '🔑', title: 'Drop-In Visits', description: 'A sitter visits your home to check in on your pet.' },
 ];
 
-// Trust stats shown below the hero
-const stats = [
-  { value: '1,000+', label: 'Trusted Sitters' },
-  { value: '5,000+', label: 'Happy Pets' },
-  { value: '4.9★', label: 'Average Rating' },
-];
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -63,17 +57,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Stats Strip ── */}
-      <section className="bg-teal-600 py-8 px-4">
-        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4 text-center text-white">
-          {stats.map((stat) => (
-            <div key={stat.label}>
-              <p className="text-3xl font-extrabold">{stat.value}</p>
-              <p className="text-teal-100 text-sm mt-1">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* ── Services Section ── */}
       <section className="py-16 px-4 bg-white">
