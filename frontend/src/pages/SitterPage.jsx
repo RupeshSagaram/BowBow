@@ -160,7 +160,7 @@ export default function SitterPage() {
     if (!petId)     return setBookingError('Please select a pet.');
     if (!startDate) return setBookingError('Please choose a start date.');
     if (!endDate)   return setBookingError('Please choose an end date.');
-    if (endDate <= startDate) return setBookingError('End date must be after start date.');
+    if (endDate < startDate) return setBookingError('End date must be before start date.');
 
     setBookingSubmitting(true);
 
