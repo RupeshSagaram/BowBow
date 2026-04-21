@@ -50,6 +50,7 @@ export default function Navbar() {
           {isSignedIn && <NavLink to="/dashboard" className={navClass}>Dashboard</NavLink>}
           {isSignedIn && <NavLink to="/bookings"  className={navClass}>Bookings</NavLink>}
           {isSignedIn && <NavLink to="/messages"  className={navClass}>Messages</NavLink>}
+          {isSignedIn && <NavLink to="/payments"  className={navClass}>Payments</NavLink>}
           {isSignedIn && <NavLink to="/pets"      className={navClass}>My Pets</NavLink>}
           {isSignedIn && <NavLink to="/profile"   className={navClass}>Profile</NavLink>}
           {isSignedIn && dbUser?.isAdmin && (
@@ -100,6 +101,7 @@ export default function Navbar() {
           {isSignedIn && <NavLink to="/dashboard" className={navClass} onClick={closeMenu}>Dashboard</NavLink>}
           {isSignedIn && <NavLink to="/bookings"  className={navClass} onClick={closeMenu}>Bookings</NavLink>}
           {isSignedIn && <NavLink to="/messages"  className={navClass} onClick={closeMenu}>Messages</NavLink>}
+          {isSignedIn && <NavLink to="/payments"  className={navClass} onClick={closeMenu}>Payments</NavLink>}
           {isSignedIn && <NavLink to="/pets"      className={navClass} onClick={closeMenu}>My Pets</NavLink>}
           {isSignedIn && <NavLink to="/profile"   className={navClass} onClick={closeMenu}>Profile</NavLink>}
           {isSignedIn && dbUser?.isAdmin && (

@@ -27,6 +27,7 @@ import SitterSetupPage from './pages/SitterSetupPage';
 import SitterPage from './pages/SitterPage';
 import BookingsPage from './pages/BookingsPage';
 import MessagesPage from './pages/MessagesPage';
+import PaymentsPage from './pages/PaymentsPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminBookingsPage from './pages/AdminBookingsPage';
@@ -100,6 +101,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <MessagesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payments"
+            element={
+              <ProtectedRoute>
+                <PaymentsPage />
               </ProtectedRoute>
             }
           />
