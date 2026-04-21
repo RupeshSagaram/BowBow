@@ -104,7 +104,7 @@ export function useBookings() {
   // Mark a CONFIRMED booking as paid — attaches payment record to the booking in ownerBookings
   async function markAsPaid(bookingId, upiTransactionRef) {
     const controller = new AbortController();
-    const timeoutId  = setTimeout(() => controller.abort(), 60000);
+    const timeoutId  = setTimeout(() => controller.abort(), 90000);
 
     try {
       const token    = await getToken();
