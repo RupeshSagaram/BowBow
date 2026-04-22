@@ -193,9 +193,11 @@ function BookingCard({ booking, actions, reviewSection }) {
 }
 
 export default function BookingsPage() {
-  const { ownerBookings, sitterBookings, loading, error, updateBookingStatus, markAsPaid, createReview } = useBookings();
+  const { ownerBookings, sitterBookings, loading, error, updateBookingStatus, markAsPaid, sendPaymentMessage, createReview } = useBookings();
   const { dbUser, loading: userLoading } = useDbUser();
   const [actionError, setActionError] = useState(null);
+  const [payingId,    setPayingId]    = useState(null);
+  const [payError,    setPayError]    = useState(null);
 
   const isOwner  = dbUser?.role === 'OWNER'  || dbUser?.role === 'BOTH';
   const isSitter = dbUser?.role === 'SITTER' || dbUser?.role === 'BOTH';
@@ -267,7 +269,7 @@ export default function BookingsPage() {
               let paymentSection = null;
               if (booking.status === 'CONFIRMED') {
                 paymentSection = (
-                  <PaymentSection booking={booking} onMarkPaid={markAsPaid} />
+                  <PaymentSection booking={booking} onSendPaymentMessage={sendPaymentMessage} />
                 );
               }
 
@@ -356,9 +358,28 @@ export default function BookingsPage() {
                         <span>✓</span> Payment Received
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-orange-700 bg-orange-50 px-2.5 py-1 rounded-full">
-                        Awaiting Payment
-                      </span>
+                      <div className="flex flex-col gap-1.5">
+                        <button
+                          disabled={payingId === booking.id}
+                          onClick={async () => {
+                            setPayError(null);
+                            setPayingId(booking.id);
+                            try {
+                              await markAsPaid(booking.id);
+                            } catch (err) {
+                              setPayError(err.message);
+                            } finally {
+                              setPayingId(null);
+                            }
+                          }}
+                          className="self-start text-sm font-semibold bg-teal-600 hover:bg-teal-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-xl transition-colors"
+                        >
+                          {payingId === booking.id ? 'Recording…' : 'Payment Received'}
+                        </button>
+                        {payError && payingId === null && (
+                          <p className="text-xs text-red-500">{payError}</p>
+                        )}
+                      </div>
                     )}
                   </div>
                 );

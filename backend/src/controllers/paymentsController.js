@@ -1,32 +1,35 @@
 // paymentsController.js — Handles payment records for bookings paid via UPI.
 //
-// markAsPaid   POST /api/payments              — owner marks a confirmed booking as paid
+// markAsPaid   POST /api/payments              — sitter confirms payment received for a confirmed booking
 // getPayment   GET  /api/payments/:bookingId   — owner or sitter checks payment status
 
 const prisma = require('../utils/prismaClient');
 
 // POST /api/payments
-// Owner calls this after paying the sitter via UPI to record the payment.
+// Sitter calls this to confirm they received payment from the owner.
 async function markAsPaid(req, res) {
   try {
     const clerkId = req.auth.userId;
-    const { bookingId, upiTransactionRef } = req.body;
+    const { bookingId } = req.body;
 
     if (!bookingId) {
       return res.status(400).json({ error: 'bookingId is required' });
     }
 
-    const user = await prisma.user.findUnique({ where: { clerkId } });
+    const user = await prisma.user.findUnique({
+      where:   { clerkId },
+      include: { sitterProfile: true },
+    });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const booking = await prisma.booking.findUnique({
       where:   { id: bookingId },
-      include: { payment: true },
+      include: { payment: true, sitterProfile: true },
     });
     if (!booking) return res.status(404).json({ error: 'Booking not found' });
 
-    if (booking.ownerId !== user.id) {
-      return res.status(403).json({ error: 'Only the booking owner can mark payment' });
+    if (booking.sitterProfile?.userId !== user.id) {
+      return res.status(403).json({ error: 'Only the sitter can confirm payment received' });
     }
 
     if (booking.status !== 'CONFIRMED') {
@@ -40,9 +43,8 @@ async function markAsPaid(req, res) {
     const payment = await prisma.payment.create({
       data: {
         bookingId,
-        amount:           booking.totalPrice,
-        status:           'PAID',
-        upiTransactionRef: upiTransactionRef ? upiTransactionRef.trim() : null,
+        amount: booking.totalPrice,
+        status: 'PAID',
       },
     });
 
