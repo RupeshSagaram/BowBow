@@ -1,5 +1,5 @@
 // PaymentSection.jsx — Shown to the owner on CONFIRMED bookings.
-// Displays a UPI deeplink button and QR code so the owner can pay the sitter directly.
+// Displays a QR code so the owner can pay the sitter directly via UPI.
 // Once the owner pays, they click "I've Paid" to record the payment on the platform.
 
 import { useState } from 'react';
@@ -86,14 +86,6 @@ export default function PaymentSection({ booking, onMarkPaid }) {
             <p className="text-xs text-gray-500 mt-0.5">{upiId}</p>
             <p className="text-base font-bold text-teal-700 mt-1.5">₹{amount}</p>
           </div>
-
-          {/* Mobile deeplink button */}
-          <a
-            href={upiUri}
-            className="inline-block bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors mb-3"
-          >
-            Open UPI App
-          </a>
 
           {/* UTR reference (optional) */}
           <div className="mb-3">
