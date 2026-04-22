@@ -138,7 +138,7 @@ export function useBookings() {
         'Content-Type': 'application/json',
         Authorization:  `Bearer ${token}`,
       },
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ text: content }),
     });
 
     if (!response.ok) {
