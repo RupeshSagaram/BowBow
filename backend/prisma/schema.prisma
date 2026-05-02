@@ -155,6 +155,9 @@ model SitterProfile {
   // Optional context for owners
   yearsExperience Int?
 
+  // Photos of the sitter's home — uploaded by sitter, visible to owners on their public profile
+  homePhotos      String[]
+
   // bookings received by this sitter
   bookings        Booking[]
 
