@@ -93,6 +93,15 @@ async function updateMe(req, res) {
     updateData.hasCompletedOnboarding = hasCompletedOnboarding;
   }
 
+  if (Object.keys(updateData).length === 0) {
+    return res.status(400).json({ error: 'No updatable fields provided' });
+  }
+
+  const VALID_ROLES = ['OWNER', 'SITTER', 'BOTH'];
+  if (updateData.role !== undefined && !VALID_ROLES.includes(updateData.role)) {
+    return res.status(400).json({ error: 'Invalid role value' });
+  }
+
   try {
     const user = await prisma.user.update({
       where: { clerkId: userId },
@@ -100,6 +109,9 @@ async function updateMe(req, res) {
     });
     res.json({ user });
   } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'User not found' });
+    }
     console.error('Error updating user:', error);
     res.status(500).json({ error: 'Failed to update user' });
   }
