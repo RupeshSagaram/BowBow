@@ -329,6 +329,23 @@ export default function SitterPage() {
         </div>
       )}
 
+      {/* ── Home photos (public) ── */}
+      {(sitterProfile.homePhotos ?? []).length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+          <h2 className="text-base font-semibold text-gray-700 mb-4">Home</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {sitterProfile.homePhotos.map((url, i) => (
+              <img
+                key={url}
+                src={url}
+                alt={`Home photo ${i + 1}`}
+                className="w-full h-36 object-cover rounded-xl"
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Availability calendar (public) ── */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
         <h2 className="text-base font-semibold text-gray-700 mb-4">Availability</h2>
