@@ -20,7 +20,7 @@ globalThis.__mockDb = {
   sitterProfile:     { findUnique: vi.fn(), upsert: vi.fn() },
   availabilityBlock: { findMany: vi.fn(), deleteMany: vi.fn(), create: vi.fn(), findFirst: vi.fn() },
   booking:           { findMany: vi.fn(), findFirst: vi.fn(), create: vi.fn(), findUnique: vi.fn() },
-  user:              { findUnique: vi.fn(), upsert: vi.fn() },
+  user:              { findUnique: vi.fn(), upsert: vi.fn(), update: vi.fn() },
   pet:               { findUnique: vi.fn(), findMany: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn() },
 };
 
