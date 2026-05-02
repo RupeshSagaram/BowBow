@@ -68,5 +68,43 @@ export function useSitterProfile() {
     return data.sitterProfile;
   }
 
-  return { sitterProfile, loading, error, saveListing };
+  // addPhoto — POST /api/sitters/me/photos
+  // Appends a Cloudinary URL to homePhotos and updates local state.
+  async function addPhoto(url) {
+    const token = await getToken();
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/sitters/me/photos`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ url }),
+    });
+
+    if (!response.ok) throw new Error('Failed to add photo');
+
+    const data = await response.json();
+    setSitterProfile((prev) => ({ ...prev, homePhotos: data.homePhotos }));
+  }
+
+  // removePhoto — DELETE /api/sitters/me/photos
+  // Removes a photo URL from homePhotos and updates local state.
+  async function removePhoto(url) {
+    const token = await getToken();
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/sitters/me/photos`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ url }),
+    });
+
+    if (!response.ok) throw new Error('Failed to remove photo');
+
+    const data = await response.json();
+    setSitterProfile((prev) => ({ ...prev, homePhotos: data.homePhotos }));
+  }
+
+  return { sitterProfile, loading, error, saveListing, addPhoto, removePhoto };
 }
