@@ -51,11 +51,9 @@ export default function Navbar() {
           {isSignedIn && <NavLink to="/bookings"  className={navClass}>Bookings</NavLink>}
           {isSignedIn && <NavLink to="/messages"  className={navClass}>Messages</NavLink>}
           {isSignedIn && <NavLink to="/payments"  className={navClass}>Payments</NavLink>}
-          {isSignedIn && <NavLink to="/pets"      className={navClass}>My Pets</NavLink>}
-          {isSignedIn && (dbUser?.role === 'SITTER' || dbUser?.role === 'BOTH') && (
-            <NavLink to="/my-listing" className={navClass}>My Listing</NavLink>
-          )}
-          {isSignedIn && <NavLink to="/profile"   className={navClass}>Profile</NavLink>}
+          {isSignedIn && <NavLink to="/pets"        className={navClass}>My Pets</NavLink>}
+          {isSignedIn && <NavLink to="/my-listing" className={navClass}>My Listing</NavLink>}
+          {isSignedIn && <NavLink to="/profile"    className={navClass}>Profile</NavLink>}
           {isSignedIn && dbUser?.isAdmin && (
             <NavLink to="/admin" className={navClass}>Admin</NavLink>
           )}
@@ -105,11 +103,9 @@ export default function Navbar() {
           {isSignedIn && <NavLink to="/bookings"  className={navClass} onClick={closeMenu}>Bookings</NavLink>}
           {isSignedIn && <NavLink to="/messages"  className={navClass} onClick={closeMenu}>Messages</NavLink>}
           {isSignedIn && <NavLink to="/payments"  className={navClass} onClick={closeMenu}>Payments</NavLink>}
-          {isSignedIn && <NavLink to="/pets"      className={navClass} onClick={closeMenu}>My Pets</NavLink>}
-          {isSignedIn && (dbUser?.role === 'SITTER' || dbUser?.role === 'BOTH') && (
-            <NavLink to="/my-listing" className={navClass} onClick={closeMenu}>My Listing</NavLink>
-          )}
-          {isSignedIn && <NavLink to="/profile"   className={navClass} onClick={closeMenu}>Profile</NavLink>}
+          {isSignedIn && <NavLink to="/pets"        className={navClass} onClick={closeMenu}>My Pets</NavLink>}
+          {isSignedIn && <NavLink to="/my-listing" className={navClass} onClick={closeMenu}>My Listing</NavLink>}
+          {isSignedIn && <NavLink to="/profile"    className={navClass} onClick={closeMenu}>Profile</NavLink>}
           {isSignedIn && dbUser?.isAdmin && (
             <NavLink to="/admin" className={navClass} onClick={closeMenu}>Admin</NavLink>
           )}
