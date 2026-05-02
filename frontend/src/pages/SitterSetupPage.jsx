@@ -372,6 +372,60 @@ export default function SitterSetupPage() {
           </p>
         </div>
 
+        {/* Home Photos — inside the main card, visible without extra scrolling */}
+        {sitterProfile && (
+          <div className="mb-6 border-t border-gray-100 pt-6">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Home Photos <span className="text-gray-400 font-normal">(optional, up to 6)</span>
+            </label>
+            <p className="text-xs text-gray-400 mb-3">
+              Show owners where their dog will stay. Photos appear on your public profile.
+            </p>
+
+            {/* Existing photos grid */}
+            {(sitterProfile.homePhotos ?? []).length > 0 && (
+              <div className="grid grid-cols-3 gap-3 mb-3">
+                {sitterProfile.homePhotos.map((url) => (
+                  <div key={url} className="relative group">
+                    <img
+                      src={url}
+                      alt="Home"
+                      className="w-full h-28 object-cover rounded-xl"
+                    />
+                    <button
+                      onClick={() => handleRemovePhoto(url)}
+                      disabled={photoUploading}
+                      className="absolute top-1 right-1 bg-black/60 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity disabled:cursor-not-allowed"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Upload button — hidden once limit is reached */}
+            {(sitterProfile.homePhotos ?? []).length < 6 && (
+              <label className={`inline-block cursor-pointer ${photoUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handlePhotoUpload}
+                  disabled={photoUploading}
+                />
+                <span className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-xl transition-colors">
+                  {photoUploading ? 'Uploading…' : '+ Add Photo'}
+                </span>
+              </label>
+            )}
+
+            {photoError && (
+              <p className="text-red-500 text-sm mt-2">{photoError}</p>
+            )}
+          </div>
+        )}
+
         {formError && (
           <p className="text-red-500 text-sm mb-4">{formError}</p>
         )}
@@ -399,58 +453,6 @@ export default function SitterSetupPage() {
             editMode
             onSave={saveBlocks}
           />
-        </div>
-      )}
-
-      {/* Home Photos — only shown after listing is created */}
-      {sitterProfile && (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mt-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-1">Home Photos</h2>
-          <p className="text-sm text-gray-500 mb-4">
-            Add up to 6 photos of your home so owners can see where their dog will stay.
-          </p>
-
-          {/* Existing photos grid */}
-          {(sitterProfile.homePhotos ?? []).length > 0 && (
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              {sitterProfile.homePhotos.map((url) => (
-                <div key={url} className="relative group">
-                  <img
-                    src={url}
-                    alt="Home"
-                    className="w-full h-28 object-cover rounded-xl"
-                  />
-                  <button
-                    onClick={() => handleRemovePhoto(url)}
-                    disabled={photoUploading}
-                    className="absolute top-1 right-1 bg-black/60 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity disabled:cursor-not-allowed"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Upload button — hidden once limit is reached */}
-          {(sitterProfile.homePhotos ?? []).length < 6 && (
-            <label className={`inline-block cursor-pointer ${photoUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handlePhotoUpload}
-                disabled={photoUploading}
-              />
-              <span className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-xl transition-colors">
-                {photoUploading ? 'Uploading…' : '+ Add Photo'}
-              </span>
-            </label>
-          )}
-
-          {photoError && (
-            <p className="text-red-500 text-sm mt-3">{photoError}</p>
-          )}
         </div>
       )}
 
