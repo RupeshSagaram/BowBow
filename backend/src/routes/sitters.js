@@ -34,6 +34,12 @@ router.put('/me', requireAuth(), sittersController.upsertMyListing);
 // PUT /api/sitters/me/availability — replaces all blocked date ranges for the sitter
 router.put('/me/availability', requireAuth(), sittersController.updateMyAvailability);
 
+// POST /api/sitters/me/photos — add a home photo URL (uploaded to Cloudinary by the frontend)
+router.post('/me/photos', requireAuth(), sittersController.addPhoto);
+
+// DELETE /api/sitters/me/photos — remove a home photo URL
+router.delete('/me/photos', requireAuth(), sittersController.removePhoto);
+
 // GET /api/sitters/:id — returns a single sitter's public profile (public)
 router.get('/:id', sittersController.getSitter);
 

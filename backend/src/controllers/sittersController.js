@@ -183,7 +183,71 @@ async function getAllSitters(req, res) {
   }
 }
 
-// ── Availability ───────────────────────────────────────────────────────────
+// ── Home Photos ────────────────────────────────────────────────────────────
+
+const MAX_PHOTOS = 6;
+
+// POST /api/sitters/me/photos
+async function addPhoto(req, res) {
+  const { userId } = req.auth;
+  const { url } = req.body;
+
+  if (!url || typeof url !== 'string' || !url.trim()) {
+    return res.status(400).json({ error: 'url is required' });
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const profile = await prisma.sitterProfile.findUnique({ where: { userId: user.id } });
+    if (!profile) return res.status(404).json({ error: 'Sitter listing not found' });
+
+    if (profile.homePhotos.length >= MAX_PHOTOS) {
+      return res.status(400).json({ error: `Maximum ${MAX_PHOTOS} photos allowed` });
+    }
+
+    const updated = await prisma.sitterProfile.update({
+      where: { userId: user.id },
+      data:  { homePhotos: { push: url.trim() } },
+    });
+
+    res.json({ homePhotos: updated.homePhotos });
+  } catch (error) {
+    console.error('Error adding photo:', error);
+    res.status(500).json({ error: 'Failed to add photo' });
+  }
+}
+
+// DELETE /api/sitters/me/photos
+async function removePhoto(req, res) {
+  const { userId } = req.auth;
+  const { url } = req.body;
+
+  if (!url || typeof url !== 'string') {
+    return res.status(400).json({ error: 'url is required' });
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const profile = await prisma.sitterProfile.findUnique({ where: { userId: user.id } });
+    if (!profile) return res.status(404).json({ error: 'Sitter listing not found' });
+
+    const updated = await prisma.sitterProfile.update({
+      where: { userId: user.id },
+      data:  { homePhotos: { set: profile.homePhotos.filter((p) => p !== url) } },
+    });
+
+    res.json({ homePhotos: updated.homePhotos });
+  } catch (error) {
+    console.error('Error removing photo:', error);
+    res.status(500).json({ error: 'Failed to remove photo' });
+  }
+}
+
+// ── Availability ────────────────────────────────────────────────────────────
 
 // GET /api/sitters/:id/availability  (public)
 // Returns the sitter's manually blocked date ranges + active booking date ranges.
@@ -271,4 +335,4 @@ async function updateMyAvailability(req, res) {
   }
 }
 
-module.exports = { getMyListing, upsertMyListing, getSitter, getAllSitters, getSitterAvailability, updateMyAvailability };
+module.exports = { getMyListing, upsertMyListing, getSitter, getAllSitters, getSitterAvailability, updateMyAvailability, addPhoto, removePhoto };
